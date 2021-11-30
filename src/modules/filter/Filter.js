@@ -15,9 +15,7 @@ import RNHTMLtoPDF from 'react-native-html-to-pdf';
 export default function Filter() {
   const getbussiness = useSelector(state => state.AuthReducer.user_bussines)
   const Filtered_items = useSelector(state => state.AuthReducer.filter_data)
-   const [crntDate, setcrntDate] = useState('')
-   const [crntmonth, setcrntmonth] = useState('')
-   const [crntYear, setcrntYear] = useState('')
+  
 useEffect(() => {
   const d = new Date();
   const date = JSON.stringify(d)
@@ -87,7 +85,7 @@ useEffect(() => {
   // console.log(userbussines_data)
 
   const [items, setItems] = useState(userbussines_data);
-  const [value, setValue] = useState(items[0].value);
+  const [value, setValue] = useState('');
 
 
   const Confirm = (date) => {
@@ -129,7 +127,7 @@ useEffect(() => {
             listMode="SCROLLVIEW"
             open={open}
             value={value}
-            items={items}
+            items={items }
             setOpen={setOpen}
             setValue={setValue}
             setItems={setItems}

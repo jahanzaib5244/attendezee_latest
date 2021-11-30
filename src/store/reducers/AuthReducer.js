@@ -1,6 +1,7 @@
 import { LOGIN, LOGOUT, RETRIEVEDUSER, FORGETPASSWORD, UPDATEPASSWORD, UPDATEPROFILE, FILTERITEMS, ATTENDENCE, BUSINESSRULE, ATTENDANCE_DAY, IMAGE, LEAVE, APPLYLEAVE } from '../Sates';
 const initialState = {
     loading: true,
+    offline:false,
     token: null,
     data: null,
     wrongemail: null,
@@ -70,6 +71,7 @@ function AuthReducer(state = initialState, action) {
         case RETRIEVEDUSER: {
             return {
                 ...state,
+                offline:action.payload.offline,
                 token: action.payload.usertoken,
                 loading: action.payload.loading,
                 data: action.payload.userdata,

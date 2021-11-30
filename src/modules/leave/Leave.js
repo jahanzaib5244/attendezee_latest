@@ -9,25 +9,25 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import { useSelector, useDispatch } from 'react-redux';
 import { doRequestLeave, viewLeave } from '../../store/actions/AuthAction';
 import AwesomeAlert from 'react-native-awesome-alerts';
-
+import Textarea from 'react-native-textarea';
 
 
 export default function Leave() {
     const getbussiness = useSelector(state => state.AuthReducer.user_bussines)
-   
+
     const dispatch = useDispatch()
     const [datefrom, setdatefrom] = useState(false);
     const [dateto, setdateto] = useState(false);
     const [from, setfrom] = useState('')
     const [to, setto] = useState('')
     const [open, setOpen] = useState(false);
-    
+
     const [description, setdescription] = useState('')
     const [message, setmessage] = useState('')
     const [loading, setloading] = useState(false)
     const [showAlert, setshowAlert] = useState(false)
     const [UpdtaeMessage, setUpdtaeMessage] = useState('')
-    
+
     // drop down picker logics
     const userbussines_data = []
     getbussiness.map((item, index) => {
@@ -37,7 +37,7 @@ export default function Leave() {
     // console.log(userbussines_data)
 
     const [items, setItems] = useState(userbussines_data);
-    const [value, setValue] = useState(items[0].value);
+    const [value, setValue] = useState('');
 
     // date picker model logics
     const showfromDatePicker = () => {
@@ -61,7 +61,7 @@ export default function Leave() {
 
         hidefromDatePicker();
     }
-   
+
 
     const Confirm = (date) => {
         const dateString = JSON.stringify(date)
@@ -85,8 +85,8 @@ export default function Leave() {
     return (
         <View style={LeaveStyle.root}>
             <StatusBar backgroundColor='#494446' barStyle="light-content" />
-            
-              
+
+
             <ScrollView nestedScrollEnabled={true}>
                 <View style={LeaveStyle.dropdown1}>
                     <DropDownPicker
@@ -137,9 +137,25 @@ export default function Leave() {
 
                     </View>
                     <Text style={LeaveStyle.page_heading}>Application for leave</Text>
-                    <View style={LeaveStyle.textinput}>
-                        <TextInput style={{ color: 'black',padding:10 }} placeholder='Leave reason...' multiline onChangeText={text => setdescription(text)} />
-                    </View>
+                    
+                        <Textarea
+                            containerStyle={{  height: 150,borderWidth:2,borderColor:'#C8C8C8',
+                                padding: 5,
+                                
+                                backgroundColor: '#ffffff',}}
+                            style={{ textAlignVertical: 'top',  // hack android
+                            height: 150,
+                            fontSize: 14,
+                            color: '#333',}}
+                            onChangeText={text => setdescription(text)}
+                            
+                            maxLength={200}
+                            placeholder={'Leave reason...'}
+                            placeholderTextColor={'#c7c7c7'}
+                            underlineColorAndroid={'transparent'}
+                        />
+                        {/* <TextInput style={{ color: 'black', padding: 10 }} placeholder='Leave reason...' multiline onChangeText={text => setdescription(text)} /> */}
+               
                     <Text style={LeaveStyle.message}>{message}</Text>
                 </View>
                 {loading ?
@@ -168,7 +184,7 @@ export default function Leave() {
 
                 />
 
-              
+
 
 
 

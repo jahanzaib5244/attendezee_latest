@@ -4,8 +4,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ToastAndroid } from "react-native";
 import DeviceInfo from 'react-native-device-info';
 import { Alert } from "react-native";
-
-
+import messaging from '@react-native-firebase/messaging';
+import ReactNativeAN from 'react-native-alarm-notification';
+import moment from 'moment'
 
 
 
@@ -37,6 +38,24 @@ export const doLogin = (setloading, email, password) => async (dispatch) => {
     // const res2=await axios.get(`https://www.attendezz.com/dashboard/api/index.php?action=update_device_code&emp_id=${res.data.user_data.user_id}&device_id=${uuid}`)
 
     if (res.data.sts == 'success') {
+
+      if ((res.data.user_created_business).length !== 0) {
+        console.log('have data', res.data.user_created_business)
+        messaging().getToken().then(Dtoken => {
+          console.log(Dtoken)
+          const savetoken = async () => {
+            await AsyncStorage.setItem('devicetoken', Dtoken);
+          }
+          savetoken()
+          const arr = res.data.user_created_business
+          const id = res.data.user_data.user_id
+          arr.map(async (item, index) => {
+            const registertoken = await axios.get(`https://www.attendezz.com/dashboard/api/index.php?action=push_token&token_id=${Dtoken}&business_id=${item.business_id}&user_id=${id}`)
+            console.log(registertoken.data.sts)
+          })
+        })
+      }
+
 
       if (res.data.user_data.is_multiple == "yes") {
         console.log("multiple true")
@@ -111,7 +130,7 @@ export const doLogin = (setloading, email, password) => async (dispatch) => {
   }
 };
 
-export const getattendance = (setModalActive,setalert_color, lat, lon, setalert_message, setshowAlert, getbussiness_id, shift) => async (dispatch) => {
+export const getattendance = (setModalActive, setalert_color, lat, lon, setalert_message, setshowAlert, getbussiness_id, shift) => async (dispatch) => {
   setModalActive(true)
   console.log(lat, lon, shift, getbussiness_id)
   let todayAttendance = []
@@ -120,26 +139,55 @@ export const getattendance = (setModalActive,setalert_color, lat, lon, setalert_
     try {
       const userid = await AsyncStorage.getItem('user')
       const res = await axios.get(`https://attendezz.com/dashboard/api/index.php?action=mark_attendance_geolocation&emp_id=${userid}&business_id=${getbussiness_id}&lat=${lat}&lon=${lon}&shift=${shift}`)
-      console.log(res)
+
 
 
       if (res.data.sts == 'success') {
-        console.log('success')
+        console.log(res.data)
         setModalActive(false)
         setalert_color('green')
         setalert_message(res.data.msg)
         setshowAlert(true)
         const id = res.data.att_id
 
+        
+       
+
         const notification = await axios.get(`https://www.attendezz.com/dashboard/api/index.php?action=getAttendanceRecord&att_id=${id}`)
-
-        console.log(notification.data.data.employee.user_first_name, "name")
-        console.log(notification.data.data.attendance.description, "descr")
-        console.log(notification.data.data.business.business_name, "bussiness")
-
+        
+        console.log(notification.data.data.notification_token.token_id, "token")
+        console.log(notification.data.data.user_extra.end_time, "time")
 
 
+        if (shift == 'Start_shift') {
+          const alarmNotifData = {
+            title: "Check Out",
+            message: "You have not check out yet plz check out first ",
+            channel: "my_channel_id",
+            small_icon: "ic_launcher",
+          
+            // You can add any additional data that is important for the notification
+            // It will be added to the PendingIntent along with the rest of the bundle.
+            // e.g.
+              data: { foo: "bar" },
+          };
 
+          const date= moment().format("DD")          
+          const month= moment().format("MM")          
+          const year= moment().format("YYYY")          
+     
+            const alarm = await ReactNativeAN.scheduleAlarm({ ...alarmNotifData, fire_date: `${date}-${month}-${year} ${notification.data.data.employee.user_extra.end_time}:00` });
+            console.log(alarm);
+              
+        } else {
+          if(shift == "End_shift"){
+            ReactNativeAN.removeAllFiredNotifications();
+          }
+        }
+
+
+    
+        console.log("calling notification api");
         await fetch('https://attendezz.herokuapp.com/notification', {
           method: 'post',
           headers: {
@@ -147,12 +195,13 @@ export const getattendance = (setModalActive,setalert_color, lat, lon, setalert_
 
           },
           body: JSON.stringify({
-            username: `${notification.data.data.employee.user_first_name} ${notification.data.data.employee.user_last_name}`,
-            userclick: `${notification.data.data.attendance.description}:${notification.data.data.business.business_name}`,
-            image: `${notification.data.data.profile_img_path}`
+            username: `${(notification.data.data.employee.user_first_name).toUpperCase()} ${(notification.data.data.employee.user_last_name).toUpperCase()}`,
+            userclick: `${notification.data.data.attendance.description} : ${notification.data.data.business.business_name}`,
+            image: `${notification.data.data.profile_img_path}`,
+            token: `${notification.data.data.notification_token.token_id}`
           })
-        })
-        
+        }).then(res => { console.log(res) })
+
       } else {
         if (res.data.sts == 'warning') {
           setModalActive(false)
@@ -168,7 +217,7 @@ export const getattendance = (setModalActive,setalert_color, lat, lon, setalert_
           }
         }
       }
-     
+
 
       const d = new Date();
       const date = d.getDate();
@@ -204,6 +253,10 @@ export const doLogout = () => async (dispatch) => {
   try {
     var filterData = []
     await AsyncStorage.removeItem('user');
+    const DeviceToken = await AsyncStorage.getItem('usertoken')
+    if (DeviceToken !== null) {
+
+    }
 
     dispatch({
       type: LOGOUT,
@@ -300,21 +353,17 @@ export const UpdateuserPassword = (setshowAlert, setAlertMessage, setloading, ol
 
 export const getuserfromstorage = () => async (dispatch) => {
   let userid = await AsyncStorage.getItem('user');
-
-
-  // console.log('useeffect call')
+  let getusertoken = {
+    loading: false,
+    offline:false,
+    usertoken: null,
+    userdata: null,
+    userbussiness: [],
+    profile_pic: '',
+  }
+  
+  console.log('useeffect call')
   try {
-
-
-    let getusertoken = {
-      loading: false,
-      usertoken: null,
-      userdata: null,
-      userbussiness: [],
-      profile_pic: '',
-    }
-
-
     if (userid !== null) {
 
       getusertoken.usertoken = userid;
@@ -324,27 +373,84 @@ export const getuserfromstorage = () => async (dispatch) => {
         getusertoken.userdata = res.data.user_data
         getusertoken.userbussiness = res.data.user_business
         getusertoken.profile_pic = res.data.user_data.profile_img_path
-
+        dispatch({
+          type: RETRIEVEDUSER,
+          payload: getusertoken
+        })
       }
     }
-
-
-
-    dispatch({
-      type: RETRIEVEDUSER,
-      payload: getusertoken
-    })
   } catch (error) {
+      
     ToastAndroid.show(
       "Make sure you have a good Internet connection",
       ToastAndroid.SHORT
     );
-    console.log(error);
+    setTimeout(() => {
+      console.log('eroor')
+      getusertoken.offline=true
+      console.log(error);
+  
+      dispatch({
+        type: RETRIEVEDUSER,
+        payload: getusertoken
+      })
+    }, 3000);
+    
   }
 
-
+ 
 
 };
+
+export const offfline=(setloading)=>async(dispatch)=>{
+  setloading(true)
+  let userid = await AsyncStorage.getItem('user');
+  let getusertoken = {
+    loading: false,
+    offline:false,
+    usertoken: null,
+    userdata: null,
+    userbussiness: [],
+    profile_pic: '',
+  }
+  
+  console.log('useeffect call')
+  try {
+    if (userid !== null) {
+
+      getusertoken.usertoken = userid;
+      let res = await axios.get(`https://www.attendezz.com/dashboard/api/index.php?action=getuser&user_id=${userid}`)
+      //  console.log(res)
+      if (res.data.sts == 'success') {
+        getusertoken.userdata = res.data.user_data
+        getusertoken.userbussiness = res.data.user_business
+        getusertoken.profile_pic = res.data.user_data.profile_img_path
+        dispatch({
+          type: RETRIEVEDUSER,
+          payload: getusertoken
+        })
+      }
+    }
+  } catch (error) {
+      
+    ToastAndroid.show(
+      "Make sure you have a good Internet connection",
+      ToastAndroid.SHORT
+    );
+    setTimeout(() => {
+      console.log('eroor')
+      getusertoken.offline=true
+      console.log(error);
+  
+      dispatch({
+        type: RETRIEVEDUSER,
+        payload: getusertoken
+      })
+      setloading(false)
+    }, 3000);
+    
+  }
+}
 
 
 

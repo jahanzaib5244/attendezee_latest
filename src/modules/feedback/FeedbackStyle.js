@@ -3,7 +3,8 @@ import { StyleSheet } from 'react-native'
 
 export const FeedbackStyle = StyleSheet.create({
     root:{
-        flex:1
+        flex:1,
+        backgroundColor:'white'
     },
     input_container:{
         marginLeft:"6%",

@@ -23,7 +23,8 @@ export const HomeStyle = StyleSheet.create({
         marginLeft: '3%',
         marginRight: '3%',
         borderTopWidth: 2,
-        borderColor: '#C8C8C8'
+        borderColor: '#C8C8C8',
+        marginTop:15
 
     },
     btn_container: {
@@ -161,7 +162,7 @@ export const HomeStyle = StyleSheet.create({
         borderRadius: 10,
         marginLeft: '6%',
         marginRight: '6%',
-        
+
     },
     modalstyle: {
         // height: '100%',
@@ -233,11 +234,11 @@ export const HomeStyle = StyleSheet.create({
         marginLeft: '6%',
         marginRight: '6%',
         marginTop: '5%',
-        marginBottom:20,
-        backgroundColor:'#FFFDAF',
-        padding:15,
-        borderRadius:15,
-        
+        marginBottom: 20,
+        backgroundColor: '#FFFDAF',
+        padding: 15,
+        borderRadius: 15,
+
     },
     rules_heading: {
         fontSize: 22,
@@ -245,9 +246,28 @@ export const HomeStyle = StyleSheet.create({
     },
     rules_text: {
         marginTop: 10,
-        textTransform:"capitalize",
-        color:'black'
-    }
+        textTransform: "capitalize",
+        color: 'black'
+    },
+
+
+    optionsContainer: {
+        backgroundColor: 'white',
+        padding: 8,
+        marginTop: 35,
+        width: 150,
+        borderRadius: 10,
+        shadowColor: "#939393",
+        shadowOpacity: 0.8,
+        shadowRadius: 5,
+        shadowOffset: {
+            height: 2,
+            width: 2
+        }
+    },
+
+
+
 
 
 })

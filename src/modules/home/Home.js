@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, ScrollView, TouchableOpacity, Image, Linking, Modal, Dimensions, StatusBar, PermissionsAndroid,RefreshControl,ActivityIndicator } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, Image, Linking, Modal, Dimensions, StatusBar, PermissionsAndroid, RefreshControl, ActivityIndicator } from 'react-native'
 import { HomeStyle } from './HomeStyle';
 import Feather from 'react-native-vector-icons/Feather';
 import { useSelector } from 'react-redux';
@@ -18,6 +18,8 @@ import DeviceInfo from 'react-native-device-info';
 import AwesomeAlert from 'react-native-awesome-alerts';
 import RNSettings from 'react-native-settings';
 import LottieView from 'lottie-react-native';
+import messaging from '@react-native-firebase/messaging';
+
 
 
 
@@ -32,22 +34,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Home({ navigation }) {
 
-    const [potrairt, setpotrairt] = useState(false)
-    const window = Dimensions.get("window").width;
-    const width = (window / 100) * 90
- 
-    const deviceHeight = Dimensions.get('window').height
-    const deviceWidth = Dimensions.get('window').width
 
-    const getpotrait = () => {
-        setpotrairt(!potrairt)
-    }
- 
+
+
+
+    //    get data from reducrs 
     const user_data = useSelector(state => state.AuthReducer.data)
     const profilepic = useSelector(state => state.AuthReducer.profileimage)
-
     const getbussiness = useSelector(state => state.AuthReducer.user_bussines)
-
     const Rules = useSelector(state => state.AuthReducer.business_rules)
     const AttendanceByoneDay = useSelector(state => state.AuthReducer.todayAttendance)
 
@@ -59,7 +53,7 @@ export default function Home({ navigation }) {
     const [lon, setlon] = useState('')
     const [image_path, setimage_path] = useState('')
     const [open, setOpen] = useState(false);
-const [refreshing, setrefreshing] = useState(false)
+    const [refreshing, setrefreshing] = useState(false)
     const [selectbussiness, setselectbussiness] = useState('')
     const [showAlert, setshowAlert] = useState(false)
     const [alert_message, setalert_message] = useState('')
@@ -68,6 +62,9 @@ const [refreshing, setrefreshing] = useState(false)
     const [scanner, setscanner] = useState(false)
     const [ModalActive, setModalActive] = useState(false)
 
+  
+    //  usebussines logics
+      
     getbussiness.map((item, index) => {
         const obj = { label: `${item.business_name}`, value: `${item.business_id}` }
         userbussines_data.push(obj)
@@ -75,7 +72,11 @@ const [refreshing, setrefreshing] = useState(false)
 
 
     const [items, setItems] = useState(userbussines_data);
-    const [value, setValue] = useState(items[0].value);
+    const [value, setValue] = useState('');
+   
+    
+
+    //  promotion logics
 
     useEffect(() => {
         let loading = false
@@ -121,6 +122,13 @@ const [refreshing, setrefreshing] = useState(false)
 
 
     const onSuccess = async (e) => {
+        RNLocation.configure({ distanceFilter: 0, })
+        let location = await RNLocation.getLatestLocation({ timeout: 100 }).then(latestLocation => {
+            if (latestLocation !== null) {
+                setlat(latestLocation.latitude);
+                setlon(latestLocation.longitude);
+            }
+        })
         const qrResult = e.data.split(/[|,]/)
         console.log(qrResult)
         if (qrResult[0] == value) {
@@ -257,23 +265,23 @@ const [refreshing, setrefreshing] = useState(false)
         setisopen(false)
         navigation.navigate('Update_profile')
     }
-    
-    const onRefresh =() => {
+
+    const onRefresh = () => {
         setrefreshing(true);
         setTimeout(() => {
             dispatch(AttendanceByDay(value));
             setrefreshing(false)
-        }, 3000); 
+        }, 3000);
     };
 
     return (
         <View style={{ flex: 1 }}>
-            <ScrollView nestedScrollEnabled={true} style={HomeStyle.root} 
-            refreshControl={
-                <RefreshControl
-                    refreshing={refreshing}
-                    onRefresh={onRefresh}
-                />}
+            <ScrollView nestedScrollEnabled={true} style={HomeStyle.root}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                    />}
             >
                 <StatusBar backgroundColor='#494446' barStyle="light-content" />
                 <View style={HomeStyle.logo_container}>
@@ -337,8 +345,7 @@ const [refreshing, setrefreshing] = useState(false)
                         setItems={setItems}
                         zIndex={1000}
                     />
-                    {/* <Text> {lat}  ---- {lon} </Text> */}
-                    {value == '' ? <Text style={{ color: '#FF6666', marginTop: 5, marginBottom: 0 }}>{selectbussiness}</Text> : <Text></Text>}
+
 
                 </View>
                 {/* button container */}
@@ -510,7 +517,7 @@ const [refreshing, setrefreshing] = useState(false)
                         overflow: 'hidden'
                     }}>
                         <SliderBox
-                            parentWidth={potrairt ? 400 : 400}
+                            parentWidth={400}
                             images={images}
                             sliderBoxHeight={200}
                             activeOpacity={0.5}
@@ -593,16 +600,14 @@ const [refreshing, setrefreshing] = useState(false)
                     </View>
                 </ScrollView>
             </ScrollView>
-            
-            <Animatable.View
-            animation="bounce"
-            duration={10000}
-            delay={0}
-            >
+
             <TouchableOpacity onPress={() => navigation.navigate('Feedback')} style={{ height: 50, width: 50, elevation: 3, borderRadius: 50 / 2, position: 'absolute', bottom: 8, right: 10, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center' }}>
                 <Image style={{ height: 40, width: 40 }} source={require('../../assets/feedback.jpg')} />
             </TouchableOpacity>
-            </Animatable.View>
+            <TouchableOpacity onPress={() => navigation.navigate('Maps')} style={{ height: 50, width: 50, elevation: 3, borderRadius: 50 / 2, position: 'absolute', bottom: 8, left: 10, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center' }}>
+                <Image style={{ height: 40, width: 40 }} source={require('../../assets/feedback.jpg')} />
+            </TouchableOpacity>
+
         </View>
     )
 }

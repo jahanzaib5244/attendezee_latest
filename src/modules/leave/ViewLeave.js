@@ -22,7 +22,7 @@ export default function ViewLeave() {
 
     const [items, setItems] = useState(userbussines_data);
     const [open, setOpen] = useState(false);
-    const [value, setValue] = useState(items[0].value);
+    const [value, setValue] = useState('');
     const [refresh, setrefresh] = useState(false)
     const [message, setmessage] = useState(null)
     const dispatch = useDispatch()

@@ -4,6 +4,8 @@ import { useDispatch } from 'react-redux'
 import { feedback } from '../../store/actions/AuthAction'
 import { FeedbackStyle } from './FeedbackStyle'
 import AwesomeAlert from 'react-native-awesome-alerts';
+import Textarea from 'react-native-textarea';
+
 
 export default function Feedback() {
     const [feedtext, setfeedtext] = useState('')
@@ -25,10 +27,24 @@ export default function Feedback() {
     return (
         <View style={FeedbackStyle.root}>
             <View style={FeedbackStyle.input_container}>
-                <Text style={FeedbackStyle.input_label}>suggestion or Problem </Text>
-            <View style={FeedbackStyle.textinput}>
-               <TextInput style={{color:'black',padding:8}} multiline={true} onChangeText={text => setfeedtext(text)}  placeholder='Describe your suggestion or problem...'/>
-               </View>
+                <Text style={FeedbackStyle.input_label}>Suggestion / Problem </Text>
+                <Textarea
+                            containerStyle={{  height: 150,borderWidth:2,borderColor:'#C8C8C8',
+                                padding: 5,
+                                
+                                backgroundColor: '#ffffff',}}
+                            style={{ textAlignVertical: 'top',  // hack android
+                            height: 150,
+                            fontSize: 14,
+                            color: '#333',}}
+                            onChangeText={text => setfeedtext(text)}
+                            
+                            maxLength={200}
+                            placeholder={'Suggestion / Problem...'}
+                            placeholderTextColor={'#c7c7c7'}
+                            underlineColorAndroid={'transparent'}
+                        />
+           
                
                <Text style={{marginLeft:'6%',color:'#FF6666'}}>{isempty}</Text>
                {loading ?
