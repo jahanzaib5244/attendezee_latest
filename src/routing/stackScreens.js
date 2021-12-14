@@ -45,7 +45,7 @@ const StackScreen = () => (
             name="Maps" component={Maps} />
         <Stack.Screen
             options={{
-                title: 'Employee', headerStyle: { backgroundColor: '#494446', },
+                title: 'Employee List', headerStyle: { backgroundColor: '#494446', },
                 headerTintColor: '#fff',
                 headerTitleStyle: {
                     fontWeight: 'bold',
@@ -54,7 +54,7 @@ const StackScreen = () => (
             name="users" component={Users} />
         <Stack.Screen
             options={({ route, navigation })=>({
-                title: `${route.params.item.empName}`, headerStyle: { backgroundColor: '#494446', },
+                title: `${(route.params.item.UserFname).toUpperCase()}`, headerStyle: { backgroundColor: '#494446', },
                 headerTintColor: '#fff',
                 headerTitleStyle: {
                     fontWeight: 'bold',

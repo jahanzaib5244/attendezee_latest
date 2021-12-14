@@ -1,120 +1,190 @@
 import React, { useEffect, useState } from 'react'
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native'
 import database from '@react-native-firebase/database';
 import MapView, { PROVIDER_GOOGLE, Marker, Polyline } from 'react-native-maps'; // remove PROVIDER_GOOGLE import if not using Google Maps
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import moment from 'moment'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 
 export default function UserMap({ route, navigation }) {
-
-    const [location, setlocation] = useState([])
-  const [showdatepicker, setshowdatepicker] = useState(false)
-  const [selected_date, setselected_date] = useState('')
-
-  const hideDatePicker = () => {
-    setshowdatepicker(false)
-  }
-    const { item } = route.params;
-    console.log(item);
+    const { item, value } = route.params;
+    console.log(value, 'item');
 
 
-    const Confirm = (date) => {
+    const [location2, setlocation2] = useState([])
+    const [showdatepicker, setshowdatepicker] = useState(false)
+    const [SelectedDate, setSelectedDate] = useState('')
+    const [loading, setloading] = useState(false)
 
-        const dateString = JSON.stringify(date)
-        console.log(dateString)
-        setselected_date((dateString.slice(1, 11)));
-        console.log(selected_date);
-        hideDatePicker();
-      }
+
 
     const getdatabase = async () => {
         console.log('getting user data')
-        database().ref(`locationHistory/${item.uid}/${selected_date}`).orderByChild('date').equalTo(`${selected_date}`).once("value",snapshot => {
-           console.log(snapshot.exists());
-            if (snapshot.exists()){
-              const userData = snapshot.val();
-              console.log("exists!", userData);
-              database()
-                  .ref(`locationHistory/${item.uid}`).orderByChild('date').equalTo(`${selected_date}`)
-                  .once('value')
-                  .then(snapshot => {
-      
-                      let data = []
-                      {
-                          Object.values(snapshot.val()).forEach(val => {
-                              console.log(val)
-                              data.push(val)
-                          })
-                      }
-                      setlocation(data)
-                  });
-            }else{
-                alert('Location not exists')
+        setloading(true)
+
+        const BusinessID = await AsyncStorage.getItem('BussinessID')
+        console.log(SelectedDate, BusinessID)
+
+        await database().ref(`${value}/locationHistory/${item.UserID}/${SelectedDate}/`).orderByValue('time').once("value", snapshot => {
+            console.log(snapshot.exists());
+            if (snapshot.exists()) {
+                // const userData = snapshot.val();
+                // console.log("exists!", userData);
+                let data = []
+                {
+                    Object.values(snapshot.val()).forEach(val => {
+                        console.log(val)
+                        data.push(val)
+                    })
+                }
+                sorted = data.sort(function (a, b) {
+                    return a.time - b.time;
+                });
+                setlocation2(sorted)
+                setloading(false)
+
+            } else {
+                Alert.alert(
+                    "Tracking",
+                    `location not found with this date ${SelectedDate}`,
+                    [
+                        {
+                            text: "Cancel",
+                            onPress: () => console.log("Cancel Pressed"),
+                            style: "cancel"
+                        },
+                        { text: "OK", onPress: () => console.log("OK Pressed") }
+                    ]
+                );
             }
+
         });
-     
 
+        setloading(false)
     }
-
-    const coordinates = []
-
-    location.map((item, index) => {
-        coordinates.push({
-            latitude:  item.lat,
-            longitude: item.lng
-        })
-    })
-    console.log(coordinates)
-
     useEffect(() => {
-        // getdatabase()
+        getdatabase()
+    }, [SelectedDate])
+    // useEffect(() => {
+    //     // console.log(moment().format("DD-MM-YYYY"))
+    //     setSelectedDate(moment().format("DD-MM-YYYY"))
+    //     const getdatabase2 = async () => {
+    //         console.log('getting user data')
 
-    }, [])
-    const selectdate=()=>{
 
+    //         const BusinessID = await AsyncStorage.getItem('BussinessID')
+    //         console.log(SelectedDate, BusinessID)
+
+    //         await database().ref(`${BusinessID}/locationHistory/${item.UserID}/${moment().format("DD-MM-YYYY")}/`).orderByChild('time').once("value", snapshot => {
+    //             console.log(snapshot.exists());
+    //             if (snapshot.exists()) {
+    //                 // const userData = snapshot.val();
+    //                 // console.log("exists!", userData);
+    //                 let data = []
+    //                 {
+    //                     Object.values(snapshot.val()).forEach(val => {
+    //                         console.log(val)
+    //                         data.push(val)
+    //                     })
+    //                 }
+    //                 setlocation2(data)
+
+    //             } else {
+    //                 Alert.alert(
+    //                     "Tracking",
+    //                     `location not found with this date ${SelectedDate}`,
+    //                     [
+    //                         {
+    //                             text: "Cancel",
+    //                             onPress: () => console.log("Cancel Pressed"),
+    //                             style: "cancel"
+    //                         },
+    //                         { text: "OK", onPress: () => console.log("OK Pressed") }
+    //                     ]
+    //                 );
+    //             }
+    //         });
+
+
+    //     }
+    //     getdatabase2()
+
+    // }, [])
+
+    const hideDatePicker = () => {
+        console.log('hide call');
+        setshowdatepicker(false)
+        // getdatabase();
     }
 
+
+
+    const Confirm = async (date) => {
+        setSelectedDate(moment(date).format("DD-MM-YYYY"))
+        hideDatePicker();
+
+    }
     return (
         <View style={styles.container}>
-            <MapView
-                provider={PROVIDER_GOOGLE}
-                style={styles.map}
-                region={{
-                    latitude: location[0] ? location[0].lat : 31.4339259,
-                    longitude: location[0] ? location[0].lng : 73.0846579,
-                    latitudeDelta: 0.015,
-                    longitudeDelta: 0.0121,
-                }}
-            >
-                {location.map((val, index) => (
-                    <Marker
-                        key={index}
-                        coordinate={{ latitude: val.lat, longitude: val.lng }}
-                        style={{ height: 50, width: 120 }}
+            {location2.length !== 0 ?
+                <MapView
+                    provider={PROVIDER_GOOGLE}
+                    style={styles.map}
+                    region={{
+                        latitude: item.latitude,
+                        longitude: item.longitude,
+                        latitudeDelta: 0.015,
+                        longitudeDelta: 0.0121,
+                    }}
+                >
+                    {location2.map((val, index) => {
+                        const time = moment(val.time).format("hh:mm:s")
+                        console.log(time)
+                        console.log(index - 1 == location2.length)
+                        if (index == 0 || index + 1 == location2.length) {
+                            return (
+                                <Marker
+                                    key={index}
+                                    coordinate={{ latitude: val.latitude, longitude: val.longitude }}
+                                    style={{ height: 50, width: 120 }}
 
-                        title={`${val.empName}`}
-                        description={`${val.date}`}
+                                    title={`${val.UserFname}`}
+                                    description={`${time}`}
+                                />
+                            )
+                        }
+
+                    })}
+
+                    <Polyline
+                        coordinates={location2}
+                        strokeColor="#7F0000" // fallback for when `strokeColors` is not supported by the map-provider
+                        strokeColors={['#7F0000']}
+                        strokeWidth={4}
                     />
-                ))}
-
-                <Polyline
-                    coordinates={coordinates}
-                    strokeColor="#7F0000" // fallback for when `strokeColors` is not supported by the map-provider
-                    strokeColors={['#7F0000']}
-                    strokeWidth={1}
-                />
-            </MapView>
+                </MapView> :
+                null
+            }
             <View style={styles.btnContainer}>
-                <TouchableOpacity onPress={() => setshowdatepicker(true)} style={styles.btn}><Text style={{ color: 'white' }}>Select Date</Text></TouchableOpacity>
-                <TouchableOpacity onPress={getdatabase} style={styles.btn}><Text style={{ color: 'white' }}>Show route</Text></TouchableOpacity>
+
+                {loading ? <View style={styles.Text}><ActivityIndicator size={20} color='white' /></View>
+                    :
+                    <TouchableOpacity onPress={() => setshowdatepicker(true)} style={styles.Text}><Text style={{ color: 'white' }}>{SelectedDate == '' ? `Select Date` : SelectedDate}</Text></TouchableOpacity>
+                }
+
+                {/* <TouchableOpacity onPress={() => setshowdatepicker(true)} style={styles.btn}><Text style={{ color: 'white' }}>Select Date</Text></TouchableOpacity> */}
+
+                {/* <TouchableOpacity onPress={getdatabase} style={styles.btn}><Text style={{ color: 'white' }}>Show Route</Text></TouchableOpacity> */}
             </View>
             <DateTimePickerModal
-            isVisible={showdatepicker}
-            mode="date"
-            date={new Date()}
-            onConfirm={Confirm}
-            onCancel={hideDatePicker}
-          />
+                isVisible={showdatepicker}
+                mode="date"
+                date={new Date()}
+                onConfirm={Confirm}
+                onCancel={hideDatePicker}
+            />
         </View>
     )
 }
@@ -131,16 +201,27 @@ const styles = StyleSheet.create({
         borderRadius: 10,
 
     },
+    Text: {
+        height: 35,
+        width: 100,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#494446',
+        alignSelf: 'flex-end',
+        marginHorizontal: 20,
+        marginTop: 10,
+        borderRadius: 10,
+
+    },
     btnContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-between'
+        justifyContent: 'center'
     },
     map: {
         ...StyleSheet.absoluteFillObject,
     },
     container: {
-        // ...StyleSheet.absoluteFillObject,
+
         flex: 1
     },
 })
-

@@ -1,5 +1,5 @@
 import React, { useState ,useEffect} from 'react'
-import { View, Text, Button, TouchableOpacity, ScrollView, ActivityIndicator, Image } from 'react-native';
+import { View, Text, Alert, TouchableOpacity, ScrollView, ActivityIndicator, Image } from 'react-native';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import RadioForm from 'react-native-simple-radio-button';
@@ -10,7 +10,7 @@ import { Filteritem } from '../../store/actions/AuthAction';
 import Pdftable from '../../componenets/Pdftable';
 import { checkMultiple, PERMISSIONS, requestMultiple } from 'react-native-permissions';
 import RNHTMLtoPDF from 'react-native-html-to-pdf';
-
+import FileViewer from "react-native-file-viewer";
 
 export default function Filter() {
   const getbussiness = useSelector(state => state.AuthReducer.user_bussines)
@@ -37,12 +37,24 @@ useEffect(() => {
       };
       try {
         let file = await RNHTMLtoPDF.convert(options)
-
-        alert(file.filePath);
+        Alert.alert(
+          "Successfull",
+          `${file.filePath}`,
+          [
+              {
+                  text: "Cancel",
+                  onPress: () => console.log("Cancel Pressed"),
+                  style: "cancel"
+              },
+              { text: "View", onPress: () => openfile(file.filePath) }
+          ]
+      );
+      
       } catch (error) {
         console.log(error)
       }
     }
+
 
     checkMultiple([PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE, PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE]).then((statuses) => {
       console.log('write', statuses[PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE]);
@@ -60,6 +72,16 @@ useEffect(() => {
       }
     });
   }
+
+  const openfile=async(path)=>{
+    try {
+      await  FileViewer.open(path)
+    } catch (error) {
+      console.log(error)
+    }
+     
+  }
+
 
 
   const [showdatepicker, setshowdatepicker] = useState(false)

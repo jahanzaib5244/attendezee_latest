@@ -9,13 +9,15 @@ const initialState = {
     old_password_incorrect: null,
     new_old_pass_wrong: null,
     UPmessage: '',
+    CreatedBusiness:[],
     filter_data: [],
     user_bussines: [],
     alert_messeage:'',
     business_rules:[],
     todayAttendance:[],
     leavedata:[],
-    profileimage:''
+    profileimage:'',
+    tracking:false
 
 }
 
@@ -25,15 +27,17 @@ function AuthReducer(state = initialState, action) {
     switch (action.type) {
 
         case LOGIN: {
-
+                        
             return {
                 ...state,
-
+                 
                 token: action.payload.usertoken,
                 data: action.payload.user_data_info,
                 invalid_user_email_password: action.payload.invalid_email_password,
                 user_bussines: action.payload.userbussiness,
-                profileimage:action.payload.profile_pic,
+                profileimage: action.payload.profile_pic,
+                tracking: action.payload.Showtracking,
+                CreatedBusiness:action.payload.CreatedBussiness
             };
         }
         case LOGOUT: {
@@ -76,8 +80,9 @@ function AuthReducer(state = initialState, action) {
                 loading: action.payload.loading,
                 data: action.payload.userdata,
                 user_bussines: action.payload.userbussiness,
-                profileimage:action.payload.profile_pic
-
+                profileimage:action.payload.profile_pic,
+                tracking: action.payload.Showtracking,
+                CreatedBusiness:action.payload.CreatedBussiness
             }
         }
         case FILTERITEMS: {

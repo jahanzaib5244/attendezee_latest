@@ -1,19 +1,20 @@
 import React from 'react'
-import { View, Text, StyleSheet, Image ,TouchableOpacity,ScrollView} from 'react-native'
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native'
 
 
 export default function Users({ route, navigation }) {
 
     const { location } = route.params;
-    console.log(location)
+    const { value } = route.params;
+    console.log(value)
 
     return (
         <View style={styles.root}>
             <ScrollView style={{ marginHorizontal: '5%', width: '100%' }}>
                 {location.map((item, index) => (
-                    <TouchableOpacity onPress={()=>navigation.navigate("usermap",{item})} key={index} style={styles.cardContainer}>
-                        <Image style={styles.cardPic} source={require('../../assets/app_logo.png')} />
-                        <View style={styles.textContainer}><Text style={{ fontSize: 15, fontWeight: '700', paddingBottom: 5 }}>{item.empName}</Text><Text> ID# {item.uid}</Text></View>
+                    <TouchableOpacity onPress={() => navigation.navigate("usermap", { item,value })} key={index} style={styles.cardContainer}>
+                        <Image style={styles.cardPic} source={{ uri: `${item.UserPic}` }} />
+                        <View style={styles.textContainer}><Text numberOfLines={1} style={{ fontSize: 15, fontWeight: '700', paddingBottom: 5, textTransform: 'capitalize' }}>{item.UserFname}  {item.UserLname}</Text><Text> ID# {item.UserID}</Text></View>
                     </TouchableOpacity>
                 ))}
             </ScrollView>
@@ -27,15 +28,15 @@ const styles = StyleSheet.create({
 
     },
     cardContainer: {
-        shadowColor: "#000",
+        shadowColor: "#494446",
         shadowOffset: {
             width: 0,
             height: 2,
         },
         shadowOpacity: 0.25,
-        shadowRadius: 3.84,
+        shadowRadius: 10.84,
 
-        elevation: 5,
+
         marginTop: 10,
         backgroundColor: 'white',
         height: 90,
@@ -43,7 +44,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         width: '90%',
         borderRadius: 15,
-        elevation: 1,
+        elevation: 3,
+        margin: 1,
     },
     cardPic: {
         height: 60,
@@ -53,5 +55,6 @@ const styles = StyleSheet.create({
     textContainer: {
         paddingLeft: 20,
         paddingTop: 10,
+        flex: 1
     }
 })

@@ -13,10 +13,8 @@ import {onStart} from '../../componenets/BackgroundService'
 
 export const doLogin = (setloading, email, password) => async (dispatch) => {
   setloading(true);
-
-
   try {
-    // let source = axios.CancelToken.source();
+    
     let user_login_data = {
       usertoken: null,
       user_data_info: null,
@@ -24,38 +22,40 @@ export const doLogin = (setloading, email, password) => async (dispatch) => {
       email_not_exist: null,
       userbussiness: [],
       profile_pic: '',
+      Showtracking:false,
+      CreatedBussiness:[]
 
     }
 
     const res = await axios.get(`https://www.attendezz.com/dashboard/api/index.php?action=login&user_email=${email}&user_password=${password}`);
 
 
-    // await AsyncStorage.setItem('uniqueid', uniqueId);
-    // let deviceid = await AsyncStorage.getItem('uniqueid');
-    // console.log(deviceid)
-    // 
-    // const res2=await axios.get(`https://www.attendezz.com/dashboard/api/index.php?action=update_device_code&emp_id=${res.data.user_data.user_id}&device_id=${uuid}`)
-
     if (res.data.sts == 'success') {
 
       if ((res.data.user_created_business).length !== 0) {
         console.log('have data', res.data.user_created_business)
+        user_login_data.Showtracking=true
+        user_login_data.CreatedBussiness=res.data.user_created_business
         messaging().getToken().then(Dtoken => {
           console.log(Dtoken)
+          
           const savetoken = async () => {
             await AsyncStorage.setItem('devicetoken', Dtoken);
+           
           }
           savetoken()
           const arr = res.data.user_created_business
           const id = res.data.user_data.user_id
           arr.map(async (item, index) => {
             const registertoken = await axios.get(`https://www.attendezz.com/dashboard/api/index.php?action=push_token&token_id=${Dtoken}&business_id=${item.business_id}&user_id=${id}`)
-            console.log(registertoken.data.sts)
-          })
+            console.log(registertoken.data.sts,'register token')
+            console.log(item.is_tracking)
+           
+              
+            await AsyncStorage.setItem(`${item.business_id}`, `${item.is_tracking}`);
+          }) 
         })
       }
-
-
       if (res.data.user_data.is_multiple == "yes") {
         console.log("multiple true")
         let token = res.data.user_data.user_id
@@ -238,10 +238,12 @@ export const doLogout = () => async (dispatch) => {
   try {
     var filterData = []
     await AsyncStorage.removeItem('user');
+    
     const DeviceToken = await AsyncStorage.getItem('usertoken')
     if (DeviceToken !== null) {
 
     }
+    await AsyncStorage.clear()
 
     dispatch({
       type: LOGOUT,
@@ -345,6 +347,8 @@ export const getuserfromstorage = () => async (dispatch) => {
     userdata: null,
     userbussiness: [],
     profile_pic: '',
+    Showtracking:false,
+    CreatedBussiness:[]
   }
   
   console.log('useeffect call')
@@ -353,8 +357,13 @@ export const getuserfromstorage = () => async (dispatch) => {
 
       getusertoken.usertoken = userid;
       let res = await axios.get(`https://www.attendezz.com/dashboard/api/index.php?action=getuser&user_id=${userid}`)
-      //  console.log(res.data)
+       console.log(res.data)
       if (res.data.sts == 'success') {
+        if ((res.data.user_created_business).length !== 0) {
+          console.log('have data', res.data.user_created_business)
+          getusertoken.Showtracking=true
+          getusertoken.CreatedBussiness=res.data.user_created_business
+        }
         getusertoken.userdata = res.data.user_data
         getusertoken.userbussiness = res.data.user_business
         getusertoken.profile_pic = res.data.user_data.profile_img_path
@@ -402,6 +411,8 @@ export const offfline=(setloading)=>async(dispatch)=>{
     userdata: null,
     userbussiness: [],
     profile_pic: '',
+    Showtracking:false,
+    CreatedBussiness:[],
   }
   
   console.log('useeffect call')
@@ -412,6 +423,11 @@ export const offfline=(setloading)=>async(dispatch)=>{
       let res = await axios.get(`https://www.attendezz.com/dashboard/api/index.php?action=getuser&user_id=${userid}`)
       //  console.log(res)
       if (res.data.sts == 'success') {
+        if ((res.data.user_created_business).length !== 0) {
+          console.log('have data', res.data.user_created_business)
+          getusertoken.Showtracking=true
+          getusertoken.CreatedBussiness=res.data.user_created_business
+        }
         getusertoken.userdata = res.data.user_data
         getusertoken.userbussiness = res.data.user_business
         getusertoken.profile_pic = res.data.user_data.profile_img_path
@@ -534,7 +550,7 @@ export const bussiness_rules = (business_id) => async (dispatch) => {
     if (business_id !== "") {
       //  let source = axios.CancelToken.source();
       const res = await axios.get(`https://www.attendezz.com/dashboard/api/index.php?action=view_business_rules&business_id=${business_id}`)
-      // console.log(res)
+      console.log(res)
       if (res.data.sts == 'success') {
         Rules = res.data.business_rules
       } else {
