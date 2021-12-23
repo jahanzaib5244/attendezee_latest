@@ -11,8 +11,6 @@ import com.rnfs.RNFSPackage;
 import com.christopherdro.htmltopdf.RNHTMLtoPDFPackage;
 import com.horcrux.svg.SvgPackage;
 import io.rumors.reactnativesettings.RNSettingsPackage;
-import com.reactnativecommunity.geolocation.GeolocationPackage;
-// import com.github.reactnativecommunity.location.RNLocationPackage;
 import com.zoontek.rnpermissions.RNPermissionsPackage;
 import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
 import org.reactnative.camera.RNCameraPackage;

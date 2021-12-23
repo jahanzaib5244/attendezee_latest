@@ -249,7 +249,8 @@ export const HomeStyle = StyleSheet.create({
         flex:2,
         // backgroundColor:'green',
         height:'100%',
-        paddingTop:'8%'
+        paddingTop:'8%',
+        paddingLeft:8,
     },
     user_firstname: {
         fontSize: 16,
@@ -273,7 +274,9 @@ export const HomeStyle = StyleSheet.create({
         flex:0.9,
         paddingTop:'5%',
         // backgroundColor:'black',
-        height:'100%'
+        height:'100%',
+        marginRight:10,
+
     },
     slider: {
         marginLeft: '5%',

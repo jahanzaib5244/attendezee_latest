@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react'
-import { View, Text } from 'react-native'
+
 import ReactNativeForegroundService from "@supersami/rn-foreground-service";
 import RNLocation from 'react-native-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';

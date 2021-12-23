@@ -13,23 +13,24 @@ export default function Maps({ navigation }) {
     const Created = useSelector(state => state.AuthReducer.CreatedBusiness)
 
     const [open, setOpen] = useState(false);
-    console.log(Created);
+    console.log(Created,'created bissiness');
     let business = []
     Created.map((item, index) => {
         if (item.is_tracking == 'yes') {
             const obj = { label: `${item.business_name}`, value: `${item.business_id}` }
             business.push(obj)
+            console.log(obj)
         }
 
     })
 
     const [items, setItems] = useState(business);
-    const [value, setValue] = useState();
+    const [value, setValue] = useState('');
     const [location, setlocation] = useState([])
 
 
     const getdatabase = async () => {
-        if (value !== '') {
+        
             console.log(('database call'));
 
             database()
@@ -63,11 +64,16 @@ export default function Maps({ navigation }) {
                     }
 
                 });
-
-        } else {
+    }
+    useEffect(() => {
+        if (items.length !== 0) {
+            if(value !== ''){
+                getdatabase()
+               }
+        }else{
             Alert.alert(
-                "Bussiness",
-                "No Bussiness Selected",
+                "Tracking",
+                "No Tracking Bussiness found",
                 [
                     {
                         text: "Cancel",
@@ -78,9 +84,8 @@ export default function Maps({ navigation }) {
                 ]
             );
         }
-    }
-    useEffect(() => {
-        getdatabase()
+        
+      
     }, [value])
 
 
@@ -108,7 +113,7 @@ export default function Maps({ navigation }) {
                                 coordinate={{ latitude: val.latitude, longitude: val.longitude }}
 
 
-                                title={`${val.UserFname}`}
+                                title={`${(val.UserFname).toUpperCase()}`}
                                 description={`${time}`}
                             >
                                 <View style={{ alignSelf: "center" }}>
@@ -129,7 +134,7 @@ export default function Maps({ navigation }) {
                         placeholder="Select Business"
                         open={open}
                         listMode="SCROLLVIEW"
-                        value={value ? value : ''}
+                        value={value}
                         items={items}
                         setOpen={setOpen}
                         setValue={setValue}
@@ -140,7 +145,7 @@ export default function Maps({ navigation }) {
                     />
                 </View>
                 <View>
-                    <TouchableOpacity onPress={() => navigation.navigate('users', { location, value })} style={styles.btn}><Text style={{ color: 'white', fontSize: 12 }}>Employee List</Text></TouchableOpacity>
+                    <TouchableOpacity disabled={location.length == 0 ? true:false} onPress={() => navigation.navigate('users', { location, value })} style={styles.btn}><Text style={{ color: 'white', fontSize: 12 }}>Employee List</Text></TouchableOpacity>
 
                     <TouchableOpacity onPress={getdatabase} style={styles.btn}><Text style={{ color: 'white', fontSize: 12 }}>Reload</Text></TouchableOpacity>
 
@@ -165,16 +170,11 @@ const styles = StyleSheet.create({
 
     },
     dropdown: {
-        // height: 35,
+        
         width: '70%',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#494446',
-        // alignSelf: 'flex-end',
-
-        // marginHorizontal: 20,
-
-        borderRadius: 10,
+       
     },
     btnContainer: {
         flexDirection: 'row',
@@ -187,7 +187,8 @@ const styles = StyleSheet.create({
     },
     container: {
         // ...StyleSheet.absoluteFillObject,
-        flex: 1
+        flex: 1,
+        backgroundColor:'white'
     },
 })
 

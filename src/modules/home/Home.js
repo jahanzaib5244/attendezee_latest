@@ -11,7 +11,6 @@ import { AttendanceByDay, bussiness_rules, getattendance } from '../../store/act
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { RNCamera } from 'react-native-camera';
-import RNLocation from 'react-native-location';
 import DeviceInfo from 'react-native-device-info';
 import AwesomeAlert from 'react-native-awesome-alerts';
 import RNSettings from 'react-native-settings';
@@ -24,13 +23,14 @@ import Menu, {
 } from 'react-native-popup-menu';
 import { doLogout } from '../../store/actions/AuthAction';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-
+import GetLocation from 'react-native-get-location'
+import { checkMultiple, PERMISSIONS, requestMultiple } from 'react-native-permissions';
+import {reminder} from '../../componenets/Notification'
 
 export default function Home({ navigation }) {
 
 
-
+const {height,width}=Dimensions.get('window')
 
     //    get data from reducrs 
     const user_data = useSelector(state => state.AuthReducer.data)
@@ -58,8 +58,8 @@ export default function Home({ navigation }) {
     const [scanner2, setscanner2] = useState(false)
     const [ModalActive, setModalActive] = useState(false)
     const [ShowTracking, setShowTracking] = useState(false)
-    const [SelectButton, setSelectButton] = useState("Start_shift")
     const [showCamera, setshowCamera] = useState(false)
+    const [loggingout, setloggingout] = useState(false)
     //  usebussines logics
 
     getbussiness.map((item, index) => {
@@ -76,7 +76,6 @@ export default function Home({ navigation }) {
 
 
     useEffect(() => {
-        //  reminder('12:42',"jahanzaib",'https://www.gstatic.com/mobilesdk/160503_mobilesdk/logo/2x/firebase_28dp.png')
         let loading = false
         const promotion = async () => {
             try {
@@ -116,7 +115,15 @@ export default function Home({ navigation }) {
         }
 
         const callForBussiness = async () => {
-          let  tracking = AsyncStorage.getItem(`${value}`)
+          let  tracking =await AsyncStorage.getItem(value)
+          console.log(tracking,'tracking')
+          const DeviceToken = await AsyncStorage.getItem('devicetoken')
+    console.log(DeviceToken)
+          if(tracking == 'yes'){
+            setShowTracking(true)
+          }else{
+            setShowTracking(false)
+          }
             dispatch(AttendanceByDay(value));
             dispatch(bussiness_rules(value));
         }
@@ -126,79 +133,133 @@ export default function Home({ navigation }) {
 
 
     const onSuccess = async (e) => {
-        RNLocation.configure({ distanceFilter: 0, })
-        RNLocation.getLatestLocation({ timeout: 100 }).then(latestLocation => {
-            if (latestLocation !== null) {
-                setlat(latestLocation.latitude);
-                setlon(latestLocation.longitude);
-            }
-        })
+  
         const qrResult = e.data.split(/[|,]/)
         console.log(qrResult)
         if (qrResult[0] == value) {
-            dispatch(getattendance(setModalActive, setalert_color, lat, lon, setalert_message, setshowAlert, value, shift))
             setscanner(false)
             setscanner2(false)
+            console.log(shift)
+            dispatch(getattendance(setModalActive, setalert_color, lat, lon, setalert_message, setshowAlert, value, shift))
+           
         } else {
+            setscanner(false)
+            setscanner2(false)
             setshowAlert(true)
             setalert_message('Please scan the correct qr code')
             setalert_color('#5E0D14')
-            setscanner(false)
-            setscanner2(false)
+            
         }
 
 
     }
+
+const permissionHandler=()=>{
+    const locationUpdate=()=>{
+        GetLocation.getCurrentPosition({
+            enableHighAccuracy: true,
+            timeout: 15000,
+        })
+        .then(location => {
+            console.log(location);
+            setlat(location.latitude);
+            setlon(location.longitude);
+            
+            setscanner2(true)
+        })
+        .catch(error => {
+            const { code, message } = error;
+            console.warn(code, message);
+            if(code == 'UNAVAILABLE'){
+            RNSettings.openSetting(RNSettings.ACTION_LOCATION_SOURCE_SETTINGS).then(
+                result => {
+                    if (result === RNSettings.ENABLED) {
+
+                    }
+                },
+            );
+        }
+        })
+    }
+    checkMultiple([PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION, PERMISSIONS.ANDROID.CAMERA]).then((statuses) => {
+        console.log('location', statuses[PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION]);
+        console.log('camera', statuses[PERMISSIONS.ANDROID.CAMERA]);
+        if ('granted' === statuses[PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION, PERMISSIONS.ANDROID.CAMERA]) {
+  
+            locationUpdate();
+        } else {
+          requestMultiple([PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION, PERMISSIONS.ANDROID.CAMERA]).then((statuses) => {
+            if ('granted' === statuses[PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION, PERMISSIONS.ANDROID.CAMERA]) {
+  
+                locationUpdate();
+            }
+          });
+        }
+      });
+
+
+
+}
+
+
+
+
+const permissionHandler2=()=>{
+    const locationUpdate=()=>{
+        GetLocation.getCurrentPosition({
+            enableHighAccuracy: true,
+            timeout: 15000,
+        })
+        .then(location => {
+            console.log(location);
+            setlat(location.latitude);
+            setlon(location.longitude);
+            
+            setscanner(true)
+        })
+        .catch(error => {
+            const { code, message } = error;
+            console.warn(code, message);
+            if(code == 'UNAVAILABLE'){
+            RNSettings.openSetting(RNSettings.ACTION_LOCATION_SOURCE_SETTINGS).then(
+                result => {
+                    if (result === RNSettings.ENABLED) {
+
+                    }
+                },
+            );
+        }
+        })
+    }
+    checkMultiple([PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION, PERMISSIONS.ANDROID.CAMERA]).then((statuses) => {
+        console.log('location', statuses[PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION]);
+        console.log('camera', statuses[PERMISSIONS.ANDROID.CAMERA]);
+        if ('granted' === statuses[PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION, PERMISSIONS.ANDROID.CAMERA]) {
+  
+            locationUpdate();
+        } else {
+          requestMultiple([PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION, PERMISSIONS.ANDROID.CAMERA]).then((statuses) => {
+            if ('granted' === statuses[PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION, PERMISSIONS.ANDROID.CAMERA]) {
+  
+                locationUpdate();
+            }
+          });
+        }
+      });
+
+
+
+}
+
+
+
     const attendance = async (btn, bussiness_id) => {
         if (bussiness_id !== '') {
+            setshift(btn)
             setselectbussiness('')
-            let location;
-            let permission = await RNLocation.checkPermission({
-                ios: 'whenInUse', // or 'always'
-                android: {
-                    detail: 'fine' // or 'fine'
-                }
-            });
-            console.log(permission)
-
-            if (!permission) {
-                permission = await RNLocation.requestPermission({
-                    ios: "whenInUse",
-                    android: {
-                        detail: "fine",
-                        rationale: {
-                            title: "We need to access your location",
-                            message: "We use your location to mark your attendance",
-                            buttonPositive: "OK",
-                            buttonNegative: "Cancel"
-                        }
-                    }
-                })
-                console.log(permission)
-
-
-            } else {
-
-
-
-                location = await RNLocation.getLatestLocation({ timeout: 100 })
-                if (location == null) {
-                    RNSettings.openSetting(RNSettings.ACTION_LOCATION_SOURCE_SETTINGS).then(
-                        result => {
-                            if (result === RNSettings.ENABLED) {
-
-                            }
-                        },
-                    );
-                } else {
-                    setlat(location.latitude);
-                    setlon(location.longitude);
-                    setshift(btn)
-                    setscanner2(true)
-                }
-
+            permissionHandler()
             }
-        } else {
+         else {
             setselectbussiness('Plz select bussiness first')
         }
 
@@ -208,7 +269,7 @@ export default function Home({ navigation }) {
 
 
     const logout = () => {
-        dispatch(doLogout())
+        dispatch(doLogout(setloggingout))
     }
 
 
@@ -285,57 +346,9 @@ export default function Home({ navigation }) {
         }, 3000);
     };
     const QrScanner = async () => {
-        
-            setselectbussiness('')
-            let location;
-            let permission = await RNLocation.checkPermission({
-                ios: 'whenInUse', // or 'always'
-                android: {
-                    detail: 'fine' // or 'fine'
-                }
-            });
-            console.log(permission)
-
-            if (!permission) {
-                permission = await RNLocation.requestPermission({
-                    ios: "whenInUse",
-                    android: {
-                        detail: "fine",
-                        rationale: {
-                            title: "We need to access your location",
-                            message: "We use your location to mark your attendance",
-                            buttonPositive: "OK",
-                            buttonNegative: "Cancel"
-                        }
-                    }
-                })
-                console.log(permission)
-
-
-            } else {
-
-
-
-                location = await RNLocation.getLatestLocation({ timeout: 100 })
-                if (location == null) {
-                    RNSettings.openSetting(RNSettings.ACTION_LOCATION_SOURCE_SETTINGS).then(
-                        result => {
-                            if (result === RNSettings.ENABLED) {
-
-                            }
-                        },
-                    );
-                } else {
-                    setlat(location.latitude);
-                    setlon(location.longitude);
-                    setshift(SelectButton)
-                    setscanner(true)
-                }
-
-            }
-      
-
-
+        setselectbussiness('')
+       
+        permissionHandler2()
     }
 
 
@@ -365,7 +378,7 @@ export default function Home({ navigation }) {
                         {/* Eclips button */}
                         <View style={HomeStyle.eclips}>
                             
-                            {sTracking ?
+                            {sTracking && ShowTracking ?
                                 <TouchableOpacity onPress={() => navigation.navigate('Maps')}><Image style={{ height: 25, width: 25, marginTop: 4,marginRight:5, tintColor: 'white' }} source={require('../../assets/location.png')} /></TouchableOpacity>
                                 :
                                 null
@@ -553,21 +566,21 @@ export default function Home({ navigation }) {
 
                                 }}>
                                 <TouchableOpacity
-                                    style={{ height: 60, width: 60, backgroundColor: SelectButton == "Start_shift" ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", alignItems: 'center', justifyContent: 'center', borderRadius: 60 / 2, }}
-                                    onPress={() => setSelectButton("Start_shift")}
-                                ><Feather name='log-in' size={30} color={SelectButton !== "Start_shift" ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.9)"} /></TouchableOpacity>
+                                    style={{ height: 60, width: 60, backgroundColor: shift == "Start_shift" ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", alignItems: 'center', justifyContent: 'center', borderRadius: 60 / 2, }}
+                                    onPress={() => setshift("Start_shift")}
+                                ><Feather name='log-in' size={30} color={shift !== "Start_shift" ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.9)"} /></TouchableOpacity>
                                 <TouchableOpacity
-                                    style={{ height: 60, width: 60, backgroundColor: SelectButton == 'End_shift' ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", alignItems: 'center', justifyContent: 'center', borderRadius: 60 / 2 }}
-                                    onPress={() => setSelectButton('End_shift')}
-                                ><Feather name='log-out' size={30} color={SelectButton !== 'End_shift' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.9)"} /></TouchableOpacity>
+                                    style={{ height: 60, width: 60, backgroundColor: shift == 'End_shift' ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", alignItems: 'center', justifyContent: 'center', borderRadius: 60 / 2 }}
+                                    onPress={() => setshift('End_shift')}
+                                ><Feather name='log-out' size={30} color={shift !== 'End_shift' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.9)"} /></TouchableOpacity>
                                 <TouchableOpacity
-                                    style={{ height: 60, width: 60, backgroundColor: SelectButton == 'Start_break' ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", alignItems: 'center', justifyContent: 'center', borderRadius: 60 / 2 }}
-                                    onPress={() => setSelectButton('Start_break')}
-                                ><Feather name='bell' size={30} color={SelectButton !== 'Start_break' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.9)"} /></TouchableOpacity>
+                                    style={{ height: 60, width: 60, backgroundColor: shift == 'Start_break' ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", alignItems: 'center', justifyContent: 'center', borderRadius: 60 / 2 }}
+                                    onPress={() => setshift('Start_break')}
+                                ><Feather name='bell' size={30} color={shift !== 'Start_break' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.9)"} /></TouchableOpacity>
                                 <TouchableOpacity
-                                    style={{ height: 60, width: 60, backgroundColor: SelectButton == 'End_break' ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", alignItems: 'center', justifyContent: 'center', borderRadius: 60 / 2 }}
-                                    onPress={() => setSelectButton('End_break')}
-                                ><Feather name='bell-off' size={30} color={SelectButton !== 'End_break' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.9)"} /></TouchableOpacity>
+                                    style={{ height: 60, width: 60, backgroundColor: shift == 'End_break' ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)", alignItems: 'center', justifyContent: 'center', borderRadius: 60 / 2 }}
+                                    onPress={() => setshift('End_break')}
+                                ><Feather name='bell-off' size={30} color={shift !== 'End_break' ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.9)"} /></TouchableOpacity>
                             </View>
 
                         </View>
@@ -816,8 +829,14 @@ export default function Home({ navigation }) {
             <TouchableOpacity onPress={() => navigation.navigate('Feedback')} style={{ height: 50, width: 50, elevation: 3, borderRadius: 50 / 2, position: 'absolute', bottom: 8, right: 10, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center' }}>
                 <Image style={{ height: 40, width: 40 }} source={require('../../assets/feedback.jpg')} />
             </TouchableOpacity>
-
-
+            {loggingout ?
+            <View style={{height:height,width:width,position:'absolute',justifyContent:'center',alignItems:'center',backgroundColor:'#494446'}}>
+            <Text style={{marginBottom:10,color:'white'}}>Logging out ...</Text>
+            <ActivityIndicator size='small' color='white' />
+        </View>
+         :
+        null }
+                  
         </View>
     )
 }

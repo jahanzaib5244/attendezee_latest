@@ -29,6 +29,10 @@ export default function Leave() {
     const [showAlert, setshowAlert] = useState(false)
     const [UpdtaeMessage, setUpdtaeMessage] = useState('')
 
+
+
+
+    
     // drop down picker logics
     const userbussines_data = []
     getbussiness.map((item, index) => {
@@ -62,11 +66,7 @@ export default function Leave() {
 
         hidefromDatePicker();
     }
-    const getdatabase = async () => {
-       const res= await database().ref('UserGpsState').remove();
-       console.log(res)
-       
-    }
+
 
     const Confirm = (date) => {
         const dateString = JSON.stringify(date)
@@ -172,24 +172,8 @@ export default function Leave() {
                         <Text style={LeaveStyle.requestbtn_text}>Request</Text>
                     </TouchableOpacity>
                 }
-                {loading ?
-                    <View style={LeaveStyle.request_btn}>
-                        <ActivityIndicator size="small" color="white" />
-                    </View>
-                    :
-                    <TouchableOpacity onPress={() => onStart()} style={LeaveStyle.request_btn}>
-                        <Text style={LeaveStyle.requestbtn_text}>start</Text>
-                    </TouchableOpacity>
-                }
-                {loading ?
-                    <View style={LeaveStyle.request_btn}>
-                        <ActivityIndicator size="small" color="white" />
-                    </View>
-                    :
-                    <TouchableOpacity onPress={() => onStop()} style={LeaveStyle.request_btn}>
-                        <Text style={LeaveStyle.requestbtn_text}>end</Text>
-                    </TouchableOpacity>
-                }
+               
+               
                 <AwesomeAlert
                     show={showAlert}
                     showProgress={false}
@@ -215,4 +199,3 @@ export default function Leave() {
         </View>
     )
 }
-//359322

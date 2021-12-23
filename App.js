@@ -5,7 +5,7 @@ import { Provider } from 'react-redux';
 import store from './src/config/Store';
 import { notificationListner, requestUserPermission, CreateOwnChannel } from './src/componenets/Notification';
 import FlashMessage from "react-native-flash-message";
-import moment from 'moment'
+import messaging from '@react-native-firebase/messaging';
 import { DeviceEventEmitter } from 'react-native';
 
 
@@ -15,11 +15,10 @@ const App = () => {
 
     CreateOwnChannel()
     requestUserPermission()
-    const date=moment().format("DD-MM-YYYY")
-   
-
-    console.log(date)
-    // console.log(new Date(Date.now() + 30 * 1000))
+    
+    messaging().getToken().then(Dtoken => {
+    console.log(Dtoken)
+    })
     notificationListner()
 
   }, [])

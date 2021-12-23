@@ -7,7 +7,7 @@ import { Alert } from "react-native";
 import messaging from '@react-native-firebase/messaging';
 import moment from 'moment'
 import {reminder,RemoveReminder} from '../../componenets/Notification'
-import {onStart} from '../../componenets/BackgroundService'
+import {onStart ,onStop} from '../../componenets/BackgroundService'
 
 
 
@@ -33,11 +33,11 @@ export const doLogin = (setloading, email, password) => async (dispatch) => {
     if (res.data.sts == 'success') {
 
       if ((res.data.user_created_business).length !== 0) {
-        console.log('have data', res.data.user_created_business)
+        // console.log('have data', res.data.user_created_business)
         user_login_data.Showtracking=true
         user_login_data.CreatedBussiness=res.data.user_created_business
         messaging().getToken().then(Dtoken => {
-          console.log(Dtoken)
+          // console.log(Dtoken)
           
           const savetoken = async () => {
             await AsyncStorage.setItem('devicetoken', Dtoken);
@@ -48,16 +48,16 @@ export const doLogin = (setloading, email, password) => async (dispatch) => {
           const id = res.data.user_data.user_id
           arr.map(async (item, index) => {
             const registertoken = await axios.get(`https://www.attendezz.com/dashboard/api/index.php?action=push_token&token_id=${Dtoken}&business_id=${item.business_id}&user_id=${id}`)
-            console.log(registertoken.data.sts,'register token')
-            console.log(item.is_tracking)
+            // console.log(registertoken.data.sts,'register token')
+            console.log(item.business_id, item.is_tracking ,'save items')
            
               
-            await AsyncStorage.setItem(`${item.business_id}`, `${item.is_tracking}`);
+            await AsyncStorage.setItem(item.business_id, `${item.is_tracking}`);
           }) 
         })
       }
       if (res.data.user_data.is_multiple == "yes") {
-        console.log("multiple true")
+        // console.log("multiple true")
         let token = res.data.user_data.user_id
         await AsyncStorage.setItem('user', token);
         user_login_data.usertoken = token;
@@ -66,7 +66,7 @@ export const doLogin = (setloading, email, password) => async (dispatch) => {
         user_login_data.profile_pic = res.data.user_data.profile_img_path;
       } else {
         if (res.data.user_data.device_id == null) {
-          console.log('did not get any device id')
+          // console.log('did not get any device id')
           let uniqueId = DeviceInfo.getUniqueId();
           console.log(uniqueId)
           const res2 = await axios.get(`https://www.attendezz.com/dashboard/api/index.php?action=update_device_code&emp_id=${res.data.user_data.user_id}&device_id=${uniqueId}`)
@@ -81,7 +81,7 @@ export const doLogin = (setloading, email, password) => async (dispatch) => {
           }
         } else {
           let uniqueId = DeviceInfo.getUniqueId();
-          console.log(uniqueId)
+          // console.log(uniqueId)
           console.log("checking device id is equal to registered id")
           if (uniqueId == res.data.user_data.device_id) {
             let token = res.data.user_data.user_id
@@ -161,17 +161,20 @@ export const getattendance = (setModalActive, setalert_color, lat, lon, setalert
 
         const notification = await axios.get(`https://www.attendezz.com/dashboard/api/index.php?action=getAttendanceRecord&att_id=${id}`)
         
-        if(res.data.tracking.business_tracking == "yes" && res.data.tracking.staff_tracking == "yes"){
+        if(res.data.tracking.business_tracking == "yes" && res.data.tracking.staff_tracking == "yes" ){
+          if(shift=="Start_shift" || shift == 'End_break'){
           await AsyncStorage.setItem('userID', notification.data.data.attendance.emp_id);
           await AsyncStorage.setItem('BussinessID', notification.data.data.attendance.business_id);
           await AsyncStorage.setItem('UserFName', notification.data.data.employee.user_first_name);
           await AsyncStorage.setItem('UserLName', notification.data.data.employee.user_last_name);
           await AsyncStorage.setItem('UserPic', notification.data.data.profile_img_path);
           onStart()
+          }
         }
 
         console.log(notification.data,)
         console.log(notification.data.data.user_extra.end_time, "time")
+        if((notification.data.data.notification_token.token_id) !== null ){
         await fetch('https://attendezz.herokuapp.com/notification', {
           method: 'post',
           headers: {
@@ -185,7 +188,7 @@ export const getattendance = (setModalActive, setalert_color, lat, lon, setalert
             token: `${notification.data.data.notification_token.token_id}`
           })
         }).then(res => { console.log("success") })
-
+      }
        
          if (shift == 'Start_shift') {
          reminder(notification.data.data.user_extra.end_time,notification.data.data.employee.user_first_name,notification.data.data.profile_img_path)
@@ -193,6 +196,11 @@ export const getattendance = (setModalActive, setalert_color, lat, lon, setalert
         } else {
           if(shift == "End_shift"){
             RemoveReminder()
+            onStop()
+          }else{
+            if(shift == "Start_break"){
+              onStop()
+            }
           }
         }
 
@@ -233,17 +241,20 @@ export const getattendance = (setModalActive, setalert_color, lat, lon, setalert
 
 
 
-export const doLogout = () => async (dispatch) => {
-
+export const doLogout = (setloggingout) => async (dispatch) => {
+  setloggingout(true)
   try {
     var filterData = []
     await AsyncStorage.removeItem('user');
     
-    const DeviceToken = await AsyncStorage.getItem('usertoken')
+    const DeviceToken = await AsyncStorage.getItem('devicetoken')
+    console.log(DeviceToken)
     if (DeviceToken !== null) {
-
+      let res =await axios.get(`https://www.attendezz.com/dashboard/api/index.php?action=deactive_token&token_id=${DeviceToken}`)
+   console.log(res.data)
     }
     await AsyncStorage.clear()
+    setloggingout(false)
 
     dispatch({
       type: LOGOUT,
@@ -363,6 +374,13 @@ export const getuserfromstorage = () => async (dispatch) => {
           console.log('have data', res.data.user_created_business)
           getusertoken.Showtracking=true
           getusertoken.CreatedBussiness=res.data.user_created_business
+          const arr= res.data.user_created_business
+          arr.map(async (item, index) => {
+           
+              
+            await AsyncStorage.setItem(item.business_id, `${item.is_tracking}`);
+          }) 
+    
         }
         getusertoken.userdata = res.data.user_data
         getusertoken.userbussiness = res.data.user_business

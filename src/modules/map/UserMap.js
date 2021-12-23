@@ -65,58 +65,13 @@ export default function UserMap({ route, navigation }) {
         setloading(false)
     }
     useEffect(() => {
-        getdatabase()
+        if(SelectedDate !== ''){
+            getdatabase()
+        }
     }, [SelectedDate])
-    // useEffect(() => {
-    //     // console.log(moment().format("DD-MM-YYYY"))
-    //     setSelectedDate(moment().format("DD-MM-YYYY"))
-    //     const getdatabase2 = async () => {
-    //         console.log('getting user data')
-
-
-    //         const BusinessID = await AsyncStorage.getItem('BussinessID')
-    //         console.log(SelectedDate, BusinessID)
-
-    //         await database().ref(`${BusinessID}/locationHistory/${item.UserID}/${moment().format("DD-MM-YYYY")}/`).orderByChild('time').once("value", snapshot => {
-    //             console.log(snapshot.exists());
-    //             if (snapshot.exists()) {
-    //                 // const userData = snapshot.val();
-    //                 // console.log("exists!", userData);
-    //                 let data = []
-    //                 {
-    //                     Object.values(snapshot.val()).forEach(val => {
-    //                         console.log(val)
-    //                         data.push(val)
-    //                     })
-    //                 }
-    //                 setlocation2(data)
-
-    //             } else {
-    //                 Alert.alert(
-    //                     "Tracking",
-    //                     `location not found with this date ${SelectedDate}`,
-    //                     [
-    //                         {
-    //                             text: "Cancel",
-    //                             onPress: () => console.log("Cancel Pressed"),
-    //                             style: "cancel"
-    //                         },
-    //                         { text: "OK", onPress: () => console.log("OK Pressed") }
-    //                     ]
-    //                 );
-    //             }
-    //         });
-
-
-    //     }
-    //     getdatabase2()
-
-    // }, [])
 
     const hideDatePicker = () => {
-        console.log('hide call');
-        setshowdatepicker(false)
-        // getdatabase();
+        setshowdatepicker(false) 
     }
 
 
@@ -140,9 +95,9 @@ export default function UserMap({ route, navigation }) {
                     }}
                 >
                     {location2.map((val, index) => {
-                        const time = moment(val.time).format("hh:mm:s")
+                        const time = moment(val.time).format("hh:mm A")
                         console.log(time)
-                        console.log(index - 1 == location2.length)
+                       
                         if (index == 0 || index + 1 == location2.length) {
                             return (
                                 <Marker
@@ -150,7 +105,7 @@ export default function UserMap({ route, navigation }) {
                                     coordinate={{ latitude: val.latitude, longitude: val.longitude }}
                                     style={{ height: 50, width: 120 }}
 
-                                    title={`${val.UserFname}`}
+                                    title={`${(val.UserFname).toUpperCase()}`}
                                     description={`${time}`}
                                 />
                             )
@@ -174,9 +129,7 @@ export default function UserMap({ route, navigation }) {
                     <TouchableOpacity onPress={() => setshowdatepicker(true)} style={styles.Text}><Text style={{ color: 'white' }}>{SelectedDate == '' ? `Select Date` : SelectedDate}</Text></TouchableOpacity>
                 }
 
-                {/* <TouchableOpacity onPress={() => setshowdatepicker(true)} style={styles.btn}><Text style={{ color: 'white' }}>Select Date</Text></TouchableOpacity> */}
-
-                {/* <TouchableOpacity onPress={getdatabase} style={styles.btn}><Text style={{ color: 'white' }}>Show Route</Text></TouchableOpacity> */}
+               
             </View>
             <DateTimePickerModal
                 isVisible={showdatepicker}
