@@ -5,7 +5,8 @@ import {
     TextInput,
     TouchableOpacity,
     ActivityIndicator,
-    ScrollView
+    ScrollView,
+    Image
 
 } from 'react-native';
 import { ForgetpasswordStyle } from './ForgetpasswordStyle';
@@ -14,11 +15,12 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { useDispatch } from 'react-redux';
 import { forgetpassword } from '../../store/actions/AuthAction';
 import { useSelector } from "react-redux";
+import AppConfigColors from '../../config/AppConfig'
 
 
 
-
-export default function Forgetpassword() {
+export default function Forgetpassword({navigation}) {
+    const [Colors]= AppConfigColors()
     const [invalidemail, setinvalidemail] = useState()
        const invalid= useSelector(state => state.AuthReducer.wrongemail);
        const [loading, setloading] = useState(false)
@@ -40,9 +42,12 @@ const dispatch = useDispatch()
         <ScrollView
         showsVerticalScrollIndicator ={false}
         showsHorizontalScrollIndicator={false}
-         style={ForgetpasswordStyle.root}
+         style={[ForgetpasswordStyle.root,{backgroundColor: Colors.Primary,}]}
          >
             <View style={ForgetpasswordStyle.logo_container}>
+                <TouchableOpacity onPress={()=>navigation.goBack()} style={{position:'absolute',top:10,alignSelf:'flex-start',paddingHorizontal:30}}>
+                    <Image style={{tintColor:Colors.textColor,height:40,width:40,resizeMode:'contain'}} source={require('../../assets/back.png')} />
+                </TouchableOpacity>
                 <Text style={ForgetpasswordStyle.textheader}>Forget Password</Text>
             </View>
             <View style={ForgetpasswordStyle.input_container}>
@@ -71,7 +76,7 @@ const dispatch = useDispatch()
                     marginTop: '50%'
                     }]}>
                         <LinearGradient
-                    colors={['#594449', '#494446']}
+                    colors={[Colors.Primary, Colors.Primary]}
                     style={ForgetpasswordStyle.signIn}
                 >
                         <ActivityIndicator  size="small" color="white"/>
@@ -85,10 +90,10 @@ const dispatch = useDispatch()
                       marginTop: '30%'
                   }]}
               ><LinearGradient
-                  colors={['#594449', '#494446']}
+                  colors={[Colors.Primary, Colors.Primary]}
                   style={ForgetpasswordStyle.signIn}
               >
-                      <Text style={ForgetpasswordStyle.textSign}
+                      <Text style={[ForgetpasswordStyle.textSign,{color:Colors.textColor}]}
                       >Forget Password</Text>
                   </LinearGradient>
               </TouchableOpacity>

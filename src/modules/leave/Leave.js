@@ -12,16 +12,17 @@ import AwesomeAlert from 'react-native-awesome-alerts';
 import Textarea from 'react-native-textarea';
 import { onStart,onStop } from '../../componenets/BackgroundService';
 import database from '@react-native-firebase/database';
+import AppConfigColors from '../../config/AppConfig'
+import DropDown from '../../componenets/DropDown';
 
 export default function Leave() {
-    const getbussiness = useSelector(state => state.AuthReducer.user_bussines)
+    const [Colors]= AppConfigColors()
 
     const dispatch = useDispatch()
     const [datefrom, setdatefrom] = useState(false);
     const [dateto, setdateto] = useState(false);
     const [from, setfrom] = useState('')
     const [to, setto] = useState('')
-    const [open, setOpen] = useState(false);
 
     const [description, setdescription] = useState('')
     const [message, setmessage] = useState('')
@@ -30,18 +31,6 @@ export default function Leave() {
     const [UpdtaeMessage, setUpdtaeMessage] = useState('')
 
 
-
-
-    
-    // drop down picker logics
-    const userbussines_data = []
-    getbussiness.map((item, index) => {
-        const obj = { label: `${item.business_name}`, value: `${item.business_id}` }
-        userbussines_data.push(obj)
-    })
-    // console.log(userbussines_data)
-
-    const [items, setItems] = useState(userbussines_data);
     const [value, setValue] = useState('');
 
     // date picker model logics
@@ -61,7 +50,7 @@ export default function Leave() {
 
     const handleConfirm = (date) => {
         const dateString = JSON.stringify(date)
-        // console.log(dateString)
+       
         setfrom((dateString.slice(1, 11)));
 
         hidefromDatePicker();
@@ -70,7 +59,7 @@ export default function Leave() {
 
     const Confirm = (date) => {
         const dateString = JSON.stringify(date)
-        // console.log(dateString)
+       
         setto((dateString.slice(1, 11)));
 
         hidetoDatePicker();
@@ -89,32 +78,19 @@ export default function Leave() {
 
     return (
         <View style={LeaveStyle.root}>
-            <StatusBar backgroundColor='#494446' barStyle="light-content" />
-
-
-            <ScrollView nestedScrollEnabled={true}>
+            <StatusBar backgroundColor={Colors.Primary} barStyle="light-content" />
                 <View style={LeaveStyle.dropdown1}>
-                    <DropDownPicker
-                        listMode="SCROLLVIEW"
-                        placeholder="Select Business"
-                        open={open}
-                        value={value}
-                        items={items}
-                        setOpen={setOpen}
-                        setValue={setValue}
-                        setItems={setItems}
-                        zIndex={1000}
-                    />
+                <DropDown selected={setValue} value={value} />
                 </View>
                 <View style={LeaveStyle.date_container}>
 
                     <View>
                         <TouchableOpacity style={LeaveStyle.date_btn} onPress={showfromDatePicker}>
-                            <Text style={LeaveStyle.btn_text}>From</Text>
+                            <Text style={[LeaveStyle.btn_text,{  color: 'black'}]}>From</Text>
                             <Ionicons
                                 size={25}
                                 name='calendar-outline'
-                                color="#494446"
+                                color={'black'}
                             />
                             <Text style={LeaveStyle.date_text}>{from}</Text>
                         </TouchableOpacity>
@@ -129,7 +105,7 @@ export default function Leave() {
                             <Ionicons
                                 size={25}
                                 name='calendar-outline'
-                                color="#494446"
+                                color={'black'}
                             />
                             <Text style={LeaveStyle.date_text}>{to}</Text>
                         </TouchableOpacity>
@@ -141,7 +117,7 @@ export default function Leave() {
                         />
 
                     </View>
-                    <Text style={LeaveStyle.page_heading}>Application for leave</Text>
+                    <Text style={[LeaveStyle.page_heading,{  color: 'black'}]}>Application for leave</Text>
                     
                         <Textarea
                             containerStyle={{  height: 150,borderWidth:2,borderColor:'#C8C8C8',
@@ -164,12 +140,12 @@ export default function Leave() {
                     <Text style={LeaveStyle.message}>{message}</Text>
                 </View>
                 {loading ?
-                    <View style={LeaveStyle.request_btn}>
+                    <View style={[LeaveStyle.request_btn,{ backgroundColor: Colors.Primary,}]}>
                         <ActivityIndicator size="small" color="white" />
                     </View>
                     :
-                    <TouchableOpacity onPress={() => request(description)} style={LeaveStyle.request_btn}>
-                        <Text style={LeaveStyle.requestbtn_text}>Request</Text>
+                    <TouchableOpacity onPress={() => request(description)} style={[LeaveStyle.request_btn,{ backgroundColor: Colors.Primary,}]}>
+                        <Text style={[LeaveStyle.requestbtn_text,{color:Colors.textColor}]}>Request</Text>
                     </TouchableOpacity>
                 }
                
@@ -195,7 +171,7 @@ export default function Leave() {
 
 
 
-            </ScrollView>
+            
         </View>
     )
 }

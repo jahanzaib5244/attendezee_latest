@@ -1,4 +1,5 @@
 import { StyleSheet,Dimensions, } from "react-native";
+import {Colors} from '../../config/AppConfig'
 const overlayColor = "rgba(0,0,0,0.5)"; // this gives us a black color with a 50% transparency
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SCREEN_WIDTH = Dimensions.get("window").width;
@@ -21,7 +22,7 @@ export const HomeStyle = StyleSheet.create({
         height: 150,
         flex:1,
         paddingLeft:'5%',
-        backgroundColor: '#494446',
+        
         // borderBottomRightRadius: 150,
         position: 'relative',
         alignItems: 'center',
@@ -228,7 +229,7 @@ export const HomeStyle = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#494446'
+       
     },
     dropdown: {
         marginLeft: '6%',
@@ -316,7 +317,6 @@ export const HomeStyle = StyleSheet.create({
     },
     rules_text: {
         marginTop: 10,
-        textTransform: "capitalize",
         color: 'black'
     },
 

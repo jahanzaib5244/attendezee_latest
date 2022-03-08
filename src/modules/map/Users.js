@@ -1,18 +1,19 @@
 import React from 'react'
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native'
-
+import AppConfigColors from '../../config/AppConfig'
 
 export default function Users({ route, navigation }) {
 
+    const [Colors]= AppConfigColors()
     const { location } = route.params;
     const { value } = route.params;
-    console.log(value)
+
 
     return (
         <View style={styles.root}>
             <ScrollView style={{ marginHorizontal: '5%', width: '100%' }}>
                 {location.map((item, index) => (
-                    <TouchableOpacity onPress={() => navigation.navigate("usermap", { item,value })} key={index} style={styles.cardContainer}>
+                    <TouchableOpacity onPress={() => navigation.navigate("usermap", { item,value })} key={index} style={[styles.cardContainer,{ shadowColor: Colors.Primary,}]}>
                         <Image style={styles.cardPic} source={{ uri: `${item.UserPic}` }} />
                         <View style={styles.textContainer}><Text numberOfLines={1} style={{ fontSize: 15, fontWeight: '700', paddingBottom: 5, textTransform: 'capitalize' }}>{item.UserFname}  {item.UserLname}</Text><Text> ID# {item.UserID}</Text></View>
                     </TouchableOpacity>
@@ -27,8 +28,8 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
 
     },
-    cardContainer: {
-        shadowColor: "#494446",
+    cardContainer : {
+       
         shadowOffset: {
             width: 0,
             height: 2,

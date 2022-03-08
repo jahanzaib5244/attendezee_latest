@@ -6,15 +6,17 @@ import Filter from '../modules/filter/Filter';
 import Home from '../modules/home/Home';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import ViewLeave from '../modules/leave/ViewLeave';
+import AppConfigColors from '../config/AppConfig'
 
 const Tab = createBottomTabNavigator();
 
 const Leavetabbar = createBottomTabNavigator();
 
  const leavescreen=()=>{
+const [Colors] = AppConfigColors()
    return(
            <Leavetabbar.Navigator 
-           barStyle={{ backgroundColor: '#594446' }}
+           barStyle={{ backgroundColor: Colors.Primary }}
            screenOptions={{
             tabBarIconStyle:({
               display:'none'
@@ -27,11 +29,11 @@ const Leavetabbar = createBottomTabNavigator();
             swipeEnabled: true,
             headerShown: false,
             tabBarPosition: 'top',
-            tabBarActiveTintColor: 'white',
-        tabBarInactiveTintColor: 'gray',
+            tabBarActiveTintColor:Colors.TabActiveIconColor,
+        tabBarInactiveTintColor: Colors.TabInactiveIconColor,
        
         tabBarStyle: ({
-          backgroundColor: '#494446',
+          backgroundColor: Colors.Primary,
           position: 'absolute',
          top:0,
          height:60,
@@ -49,17 +51,18 @@ const Leavetabbar = createBottomTabNavigator();
    )
  }
 const TabScreen = () => {
+  const [Colors] = AppConfigColors()
   return (
     <Tab.Navigator
 
-      barStyle={{ backgroundColor: '#594446' }}
+      barStyle={{ backgroundColor: Colors.Primary }}
 
       screenOptions={({ route }) => ({
         keyboardHidesTabBar: true,
         swipeEnabled: true,
         tabBarPosition: 'bottom',
         tabBarStyle: ({
-          backgroundColor: '#494446',
+          backgroundColor:Colors.Primary,
           height: 60,
           width: '100%',
           position: 'relative',
@@ -86,8 +89,8 @@ const TabScreen = () => {
           }
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: 'white',
-        tabBarInactiveTintColor: 'gray',
+        tabBarActiveTintColor: Colors.TabActiveIconColor,
+        tabBarInactiveTintColor: Colors.TabInactiveIconColor,
       })}
 
     >

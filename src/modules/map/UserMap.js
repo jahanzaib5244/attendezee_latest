@@ -5,10 +5,11 @@ import MapView, { PROVIDER_GOOGLE, Marker, Polyline } from 'react-native-maps'; 
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import moment from 'moment'
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import AppConfigColors from '../../config/AppConfig'
 
 
 export default function UserMap({ route, navigation }) {
+    const [Colors]= AppConfigColors()
     const { item, value } = route.params;
     console.log(value, 'item');
 
@@ -124,7 +125,7 @@ export default function UserMap({ route, navigation }) {
             }
             <View style={styles.btnContainer}>
 
-                {loading ? <View style={styles.Text}><ActivityIndicator size={20} color='white' /></View>
+                {loading ? <View style={[styles.Text,{backgroundColor: Colors.Primary,}]}><ActivityIndicator size={20} color='white' /></View>
                     :
                     <TouchableOpacity onPress={() => setshowdatepicker(true)} style={styles.Text}><Text style={{ color: 'white' }}>{SelectedDate == '' ? `Select Date` : SelectedDate}</Text></TouchableOpacity>
                 }
@@ -147,7 +148,6 @@ const styles = StyleSheet.create({
         width: 100,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#494446',
         alignSelf: 'flex-end',
         marginHorizontal: 20,
         marginTop: 10,
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
         width: 100,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#494446',
+        
         alignSelf: 'flex-end',
         marginHorizontal: 20,
         marginTop: 10,

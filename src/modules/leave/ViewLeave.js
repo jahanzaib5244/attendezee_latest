@@ -4,24 +4,15 @@ import { LeaveStyle } from './LeaveStyle';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { useSelector, useDispatch } from 'react-redux';
 import { doRequestLeave, viewLeave } from '../../store/actions/AuthAction';
+import DropDown from '../../componenets/DropDown';
 
 
 export default function ViewLeave() {
-    const getbussiness = useSelector(state => state.AuthReducer.user_bussines)
     const leavedata = useSelector(state => state.AuthReducer.leavedata)
 
 
 
 
-    const userbussines_data = []
-    getbussiness.map((item, index) => {
-        const obj = { label: `${item.business_name}`, value: `${item.business_id}` }
-        userbussines_data.push(obj)
-    })
-    // console.log(userbussines_data)
-
-    const [items, setItems] = useState(userbussines_data);
-    const [open, setOpen] = useState(false);
     const [value, setValue] = useState('');
     const [refresh, setrefresh] = useState(false)
     const [message, setmessage] = useState(null)
@@ -100,17 +91,7 @@ export default function ViewLeave() {
     return (
         <View style={{ flex: 1, backgroundColor: 'white' }}>
             <View style={LeaveStyle.dropdown}>
-                <DropDownPicker
-                    listMode="SCROLLVIEW"
-                    placeholder="Select Business"
-                    open={open}
-                    value={value}
-                    items={items}
-                    setOpen={setOpen}
-                    setValue={setValue}
-                    setItems={setItems}
-                    zIndex={1000}
-                />
+            <DropDown selected={setValue} value={value} />
                 {message && <Text style={{marginTop:'2%',color:'#F76F72'}}>{message}</Text>}
             </View>
             

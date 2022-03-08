@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import {Colors} from '../../config/AppConfig'
 
 
 export const FilterStyle = StyleSheet.create({
@@ -14,7 +15,7 @@ export const FilterStyle = StyleSheet.create({
 
         width: "100%",
         height: 100,
-        backgroundColor: '#494446',
+      
         justifyContent: 'center',
         alignItems: 'center',
         borderBottomRightRadius: 25,
@@ -141,7 +142,7 @@ export const FilterStyle = StyleSheet.create({
         margin: '5%',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#494446',
+        
         padding: 10,
         borderRadius: 15
     },

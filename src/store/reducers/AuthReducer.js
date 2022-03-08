@@ -1,4 +1,4 @@
-import { LOGIN, LOGOUT, RETRIEVEDUSER, FORGETPASSWORD, UPDATEPASSWORD, UPDATEPROFILE, FILTERITEMS, ATTENDENCE, BUSINESSRULE, ATTENDANCE_DAY, IMAGE, LEAVE, APPLYLEAVE } from '../Sates';
+import {CONFIG, LOGIN, LOGOUT, RETRIEVEDUSER, FORGETPASSWORD, UPDATEPASSWORD, UPDATEPROFILE, FILTERITEMS, ATTENDENCE, BUSINESSRULE, ATTENDANCE_DAY, IMAGE, LEAVE, APPLYLEAVE, ID } from '../Sates';
 const initialState = {
     loading: true,
     offline:false,
@@ -17,15 +17,38 @@ const initialState = {
     todayAttendance:[],
     leavedata:[],
     profileimage:'',
-    tracking:false
-
+    tracking:false,
+    PrimaryColor:'#494446',
+    SecondaryColor:'#FFFFFF',
+    AppName:'Attendezz.com',
+    TextColor:'#fff',
+    URL:'https://www.attendezz.com/dashboard/api/index.php',
+    Logo:'',
+    selectedBussiness:{}
+    
 }
 
 
 
 function AuthReducer(state = initialState, action) {
     switch (action.type) {
-
+   case ID :{
+       return{
+           ...state,
+           selectedBussiness:action.payload
+       }
+   }
+        case CONFIG :{
+            return {
+                ...state,
+                PrimaryColor:action.payload.primary, 
+                SecondaryColor:action.payload.Secondary, 
+                AppName:action.payload.appName, 
+                URL:action.payload.Url,
+                Logo:action.payload.logo,
+                TextColor:action.payload.textColor,
+            }
+        }
         case LOGIN: {
                         
             return {

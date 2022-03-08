@@ -1,10 +1,11 @@
 
-import { StyleSheet } from 'react-native'
+import { StyleSheet } from 'react-native';
+import {Colors } from '../../config/AppConfig';
 
 export const FeedbackStyle = StyleSheet.create({
     root:{
         flex:1,
-        backgroundColor:'white'
+        
     },
     input_container:{
         marginLeft:"6%",
@@ -33,7 +34,7 @@ export const FeedbackStyle = StyleSheet.create({
         marginTop:50,
         marginLeft:'6%',
         marginRight:'6%',
-        backgroundColor:'#494446',
+        
         height:40,
         borderRadius:15,
         alignItems:'center',

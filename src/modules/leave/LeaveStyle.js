@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-
+import { Colors } from "../../config/AppConfig";
 
 export const LeaveStyle = StyleSheet.create({
     root: {
@@ -10,7 +10,7 @@ export const LeaveStyle = StyleSheet.create({
 
         width: "100%",
         height: 100,
-        backgroundColor: '#494446',
+       
         justifyContent: 'center',
         alignItems: 'center',
         borderBottomRightRadius: 25,
@@ -36,7 +36,7 @@ export const LeaveStyle = StyleSheet.create({
 
         fontSize: 18,
         width: 50,
-        color: '#494446'
+      
     },
     date_container: {
         marginLeft: '6%',
@@ -100,7 +100,7 @@ export const LeaveStyle = StyleSheet.create({
         margin: '5%',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#494446',
+       
         padding: 10,
         borderRadius: 15
     },
@@ -109,7 +109,7 @@ export const LeaveStyle = StyleSheet.create({
         margin: '5%',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#494446',
+       
         padding: 10,
         borderRadius: 15
     },
@@ -200,7 +200,7 @@ export const LeaveStyle = StyleSheet.create({
         fontSize: 18,
         paddingTop: 10,
         paddingBottom: 10,
-        color: '#494446'
+      
     },
     dropdown: {
         marginLeft: '6%',

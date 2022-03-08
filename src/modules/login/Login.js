@@ -9,16 +9,16 @@ import { useDispatch } from "react-redux";
 import { doLogin } from '../../store/actions/AuthAction';
 import { useSelector } from 'react-redux';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-
+import AppConfigColors from '../../config/AppConfig'
 
 
 
 export default function Login({ navigation }) {
 
-
+    const [Colors,URL ,Appicon,AppName ]= AppConfigColors()
 
     const invalid_user = useSelector(state => state.AuthReducer.invalid_user_email_password);
-    console.log(invalid_user)
+   
     const [data, setData] = useState({
         secureTextEntry: true,
     });
@@ -47,15 +47,15 @@ export default function Login({ navigation }) {
     }
     return (
 
-        <View style={LoginStyle.root}>
-            <StatusBar backgroundColor='#494446' barStyle="light-content" />
+        <View style={[LoginStyle.root,{ backgroundColor:Colors.Primary}]}>
+            <StatusBar backgroundColor={Colors.Primary} barStyle="light-content" />
             <KeyboardAwareScrollView 
             showsVerticalScrollIndicator ={false}
             showsHorizontalScrollIndicator={false}
             >
             <View style={LoginStyle.logo_container}>
                 <Image style={{width:75,height:75,opacity:0.9,marginBottom:-8}} source={require('../../assets/app_logo.png')}/>
-                <Text style={{color:'white',fontSize:28,letterSpacing:2}}>Attendezz.com</Text>
+                <Text style={{color:Colors.textColor,fontSize:28,letterSpacing:2,marginTop:10}}>{AppName}</Text>
             </View>
             <Animatable.View
                 animation="fadeInUpBig"
@@ -68,7 +68,7 @@ export default function Login({ navigation }) {
                         size={20}
                     />
                     <TextInput
-                        placeholder="Your Email Adress..."
+                        placeholder="Your Email Address..."
                         placeholderTextColor="#666666"
                         style={LoginStyle.textInput}
                         autoCapitalize="none"
@@ -123,8 +123,8 @@ export default function Login({ navigation }) {
                   <Text style={{ color: '#FF6666' }}>{email_empty}</Text> 
                 
                
-                <TouchableOpacity onPress={() => navigation.navigate('Forgetpassword')}>
-                    <Text style={{ color: '#494446', marginTop: 15 }}>Forgot password?</Text>
+                <TouchableOpacity style={{paddingVertical:15}} onPress={() => navigation.navigate('Forgetpassword')}>
+                    <Text style={{ color:Colors.Primary, }}>Forgot password?</Text>
                 </TouchableOpacity>
                 <View style={LoginStyle.button}>
                     {loading ?
@@ -132,7 +132,7 @@ export default function Login({ navigation }) {
                             
                             style={LoginStyle.signIn}
                         ><LinearGradient
-                            colors={['#594449', '#494446']}
+                            colors={[Colors.Primary, Colors.Primary]}
                             style={LoginStyle.signIn}
                         >
                                 <ActivityIndicator size="small" color="white" />
@@ -143,10 +143,10 @@ export default function Login({ navigation }) {
                             onPress={()=>douserlogin(email,password)}
                             style={LoginStyle.signIn}
                         ><LinearGradient
-                            colors={['#594449', '#494446']}
+                            colors={[Colors.Primary, Colors.Primary]}
                             style={LoginStyle.signIn}
                         >
-                                <Text style={LoginStyle.textSign}
+                                <Text style={[LoginStyle.textSign,{color:Colors.textColor}]}
                                 >Log In</Text>
                             </LinearGradient>
                         </TouchableOpacity>

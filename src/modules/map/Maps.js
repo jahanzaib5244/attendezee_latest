@@ -9,17 +9,17 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import { useSelector } from 'react-redux';
 
 export default function Maps({ navigation }) {
-
+    const [Colors]= AppConfigColors()
     const Created = useSelector(state => state.AuthReducer.CreatedBusiness)
 
     const [open, setOpen] = useState(false);
-    console.log(Created,'created bissiness');
+   
     let business = []
     Created.map((item, index) => {
         if (item.is_tracking == 'yes') {
             const obj = { label: `${item.business_name}`, value: `${item.business_id}` }
             business.push(obj)
-            console.log(obj)
+          
         }
 
     })
@@ -31,18 +31,18 @@ export default function Maps({ navigation }) {
 
     const getdatabase = async () => {
         
-            console.log(('database call'));
+          
 
             database()
                 .ref(`${value}/CurrentLocation`)
                 .once('value')
                 .then(snapshot => {
-                    console.log(snapshot.exists());
+                   
                     if (snapshot.exists()) {
                         let data = []
                         {
                             Object.values(snapshot.val()).forEach(val => {
-                                console.log(val)
+                             
                                 data.push(val)
                             })
                         }
@@ -89,7 +89,7 @@ export default function Maps({ navigation }) {
     }, [value])
 
 
-    console.log(value)
+  
     return (
         <View style={styles.container}>
             {location[0] &&
@@ -106,7 +106,7 @@ export default function Maps({ navigation }) {
                     {location.map((val, index) => {
 
                         const time = moment(val.time).format("hh:mm A")
-                        console.log(time)
+                      
                         return (
                             <Marker
                                 key={index}
@@ -145,7 +145,7 @@ export default function Maps({ navigation }) {
                     />
                 </View>
                 <View>
-                    <TouchableOpacity disabled={location.length == 0 ? true:false} onPress={() => navigation.navigate('users', { location, value })} style={styles.btn}><Text style={{ color: 'white', fontSize: 12 }}>Employee List</Text></TouchableOpacity>
+                    <TouchableOpacity disabled={location.length == 0 ? true:false} onPress={() => navigation.navigate('users', { location, value })} style={[styles.btn,{ backgroundColor: Colors.Primary,}]}><Text style={{ color: 'white', fontSize: 12 }}>Employee List</Text></TouchableOpacity>
 
                     <TouchableOpacity onPress={getdatabase} style={styles.btn}><Text style={{ color: 'white', fontSize: 12 }}>Reload</Text></TouchableOpacity>
 
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
         width: 100,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#494446',
+       
         alignSelf: 'flex-end',
         marginHorizontal: 20,
         marginTop: 10,

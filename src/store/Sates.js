@@ -12,4 +12,7 @@ export const IMAGE="IMAGE"
 export const LEAVE="LEAVE"
 export const APPLYLEAVE="APPLYLEAVE"
 export const FEEDBACK="FEEDBACK"
+export const CONFIG="CONFIG"
+export const ID="ID"
+
 // architecture and pattern

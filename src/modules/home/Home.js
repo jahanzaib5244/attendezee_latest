@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { View, Text, ScrollView, TouchableOpacity, Image, Linking, Modal, Dimensions, StatusBar, PermissionsAndroid, RefreshControl, ActivityIndicator } from 'react-native'
+import React, { useState, useEffect, useRef } from 'react'
+import { View, Text, ScrollView, TouchableOpacity, Image, Linking, Modal, Dimensions, StatusBar, Animated, RefreshControl, ActivityIndicator } from 'react-native'
 import { HomeStyle } from './HomeStyle';
 import Feather from 'react-native-vector-icons/Feather';
 import { useSelector } from 'react-redux';
@@ -25,12 +25,59 @@ import { doLogout } from '../../store/actions/AuthAction';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import GetLocation from 'react-native-get-location'
 import { checkMultiple, PERMISSIONS, requestMultiple } from 'react-native-permissions';
-import {reminder} from '../../componenets/Notification'
+import AppConfigColors from '../../config/AppConfig'
+import { ConfigInfo } from '../../store/actions/Appconfig'
+import DropDown from '../../componenets/DropDown';
+import { ID } from '../../store/Sates';
+import NfcManager, { NfcTech, Ndef } from 'react-native-nfc-manager';
+import messaging from '@react-native-firebase/messaging';
+
 
 export default function Home({ navigation }) {
+    const [Colors] = AppConfigColors()
+    const AnimatedScale = useRef(new Animated.Value(35)).current
+    const AnimatedScroll = useRef(new Animated.Value(1000)).current
+    const opacity = useRef(new Animated.Value(0)).current
+    const { height, width } = Dimensions.get('window')
+    const animatedStyle = {
+        transform: [
+            {
+                scale: AnimatedScale
+            }
+        ]
+    }
 
-
-const {height,width}=Dimensions.get('window')
+    const ScrollAnimated = {
+        transform: [
+            {
+                translateY: AnimatedScroll
+            }
+        ]
+    }
+    const Animatedopacity = {
+        opacity: opacity
+    }
+    const feddBackAnimation = () => {
+        Animated.timing(AnimatedScale, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true
+        }).start(() => {
+            AnimationOpacity()
+            Animated.timing(AnimatedScroll, {
+                toValue: 0,
+                duration: 600,
+                useNativeDriver: true
+            }).start()
+        })
+    }
+    const AnimationOpacity = () => {
+        Animated.timing(opacity, {
+            toValue: 1,
+            duration: 600,
+            useNativeDriver: true
+        }).start()
+    }
 
     //    get data from reducrs 
     const user_data = useSelector(state => state.AuthReducer.data)
@@ -39,7 +86,8 @@ const {height,width}=Dimensions.get('window')
     const Rules = useSelector(state => state.AuthReducer.business_rules)
     const AttendanceByoneDay = useSelector(state => state.AuthReducer.todayAttendance)
     const sTracking = useSelector(state => state.AuthReducer.tracking)
-   console.log(sTracking)
+
+    
 
     const [shift, setshift] = useState('')
     const [alert_color, setalert_color] = useState('')
@@ -60,22 +108,36 @@ const {height,width}=Dimensions.get('window')
     const [ShowTracking, setShowTracking] = useState(false)
     const [showCamera, setshowCamera] = useState(false)
     const [loggingout, setloggingout] = useState(false)
-    //  usebussines logics
-
-    getbussiness.map((item, index) => {
-        const obj = { label: `${item.business_name}`, value: `${item.business_id}` }
-        userbussines_data.push(obj)
-    })
-
-
-    const [items, setItems] = useState(userbussines_data);
+    //  select bussiness value state
+    const [nfcSupport, setnfcSupport] = useState(false)
     const [value, setValue] = useState('');
 
+ 
+    useEffect(() => {
+        const nfcInit = async () => {
+          const supported = await NfcManager.isSupported();
+         setnfcSupport(supported)
+        }
+        nfcInit()
+      }, [])
+const registerToken=async()=>{
+    const userid=await AsyncStorage.getItem('user')
+   const token = await messaging().getToken()
 
+   try {
+    let res=await axios.get(`https://attendezz.com/dashboard/api/index.php?action=update_notification_id&emp_id=${userid}&notification_id=${token}`)
+   
+   } catch (error) {
+     
+   }
 
+}
 
 
     useEffect(() => {
+        registerToken()
+        feddBackAnimation()
+        // Breakreminder('jahanzaib')
         let loading = false
         const promotion = async () => {
             try {
@@ -86,7 +148,7 @@ const {height,width}=Dimensions.get('window')
                     setimagesurl(res.data.promotion_data)
                 }
             } catch (error) {
-                console.log(error)
+               
             }
 
         }
@@ -99,7 +161,7 @@ const {height,width}=Dimensions.get('window')
     const imagesurls = []
     if (image_path !== '') {
         imagesurl.map((item) => {
-            // console.log(item)
+         
             return (
                 images.push(`${image_path}${item.pic}`),
                 imagesurls.push(`${item.link}`)
@@ -109,21 +171,32 @@ const {height,width}=Dimensions.get('window')
     }
     const dispatch = useDispatch()
     useEffect(() => {
+
+        getbussiness.map((item, index) => {
+            if (value == item.business_id) {
+                dispatch({
+                    type: ID,
+                    payload: item
+                })
+            }
+        })
         setselectbussiness('')
-        if(value !== ''){
+        if (value !== '') {
             setshowCamera(true)
         }
 
         const callForBussiness = async () => {
-          let  tracking =await AsyncStorage.getItem(value)
-          console.log(tracking,'tracking')
-          const DeviceToken = await AsyncStorage.getItem('devicetoken')
-    console.log(DeviceToken)
-          if(tracking == 'yes'){
-            setShowTracking(true)
-          }else{
-            setShowTracking(false)
-          }
+
+
+            let tracking = await AsyncStorage.getItem(value)
+           
+            const DeviceToken = await AsyncStorage.getItem('devicetoken')
+         
+            if (tracking == 'yes') {
+                setShowTracking(true)
+            } else {
+                setShowTracking(false)
+            }
             dispatch(AttendanceByDay(value));
             dispatch(bussiness_rules(value));
         }
@@ -133,124 +206,121 @@ const {height,width}=Dimensions.get('window')
 
 
     const onSuccess = async (e) => {
-  
+
         const qrResult = e.data.split(/[|,]/)
-        console.log(qrResult)
+       
         if (qrResult[0] == value) {
             setscanner(false)
             setscanner2(false)
-            console.log(shift)
+          
             dispatch(getattendance(setModalActive, setalert_color, lat, lon, setalert_message, setshowAlert, value, shift))
-           
+
         } else {
             setscanner(false)
             setscanner2(false)
             setshowAlert(true)
             setalert_message('Please scan the correct qr code')
             setalert_color('#5E0D14')
-            
+
         }
 
 
     }
 
-const permissionHandler=()=>{
-    const locationUpdate=()=>{
-        GetLocation.getCurrentPosition({
-            enableHighAccuracy: true,
-            timeout: 15000,
-        })
-        .then(location => {
-            console.log(location);
-            setlat(location.latitude);
-            setlon(location.longitude);
-            
-            setscanner2(true)
-        })
-        .catch(error => {
-            const { code, message } = error;
-            console.warn(code, message);
-            if(code == 'UNAVAILABLE'){
-            RNSettings.openSetting(RNSettings.ACTION_LOCATION_SOURCE_SETTINGS).then(
-                result => {
-                    if (result === RNSettings.ENABLED) {
+    const permissionHandler = () => {
+        const locationUpdate = () => {
+            GetLocation.getCurrentPosition({
+                enableHighAccuracy: true,
+                timeout: 15000,
+            })
+                .then(location => {
+                   
+                    setlat(location.latitude);
+                    setlon(location.longitude);
 
+                    setscanner2(true)
+                })
+                .catch(error => {
+                    const { code, message } = error;
+                    console.warn(code, message);
+                    if (code == 'UNAVAILABLE') {
+                        RNSettings.openSetting(RNSettings.ACTION_LOCATION_SOURCE_SETTINGS).then(
+                            result => {
+                                if (result === RNSettings.ENABLED) {
+
+                                }
+                            },
+                        );
                     }
-                },
-            );
+                })
         }
-        })
-    }
-    checkMultiple([PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION, PERMISSIONS.ANDROID.CAMERA]).then((statuses) => {
-        console.log('location', statuses[PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION]);
-        console.log('camera', statuses[PERMISSIONS.ANDROID.CAMERA]);
-        if ('granted' === statuses[PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION, PERMISSIONS.ANDROID.CAMERA]) {
-  
-            locationUpdate();
-        } else {
-          requestMultiple([PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION, PERMISSIONS.ANDROID.CAMERA]).then((statuses) => {
+        checkMultiple([PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION, PERMISSIONS.ANDROID.CAMERA]).then((statuses) => {
+         
             if ('granted' === statuses[PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION, PERMISSIONS.ANDROID.CAMERA]) {
-  
+
                 locationUpdate();
-            }
-          });
-        }
-      });
+            } else {
+                requestMultiple([PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION, PERMISSIONS.ANDROID.CAMERA]).then((statuses) => {
+                    if ('granted' === statuses[PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION, PERMISSIONS.ANDROID.CAMERA]) {
 
-
-
-}
-
-
-
-
-const permissionHandler2=()=>{
-    const locationUpdate=()=>{
-        GetLocation.getCurrentPosition({
-            enableHighAccuracy: true,
-            timeout: 15000,
-        })
-        .then(location => {
-            console.log(location);
-            setlat(location.latitude);
-            setlon(location.longitude);
-            
-            setscanner(true)
-        })
-        .catch(error => {
-            const { code, message } = error;
-            console.warn(code, message);
-            if(code == 'UNAVAILABLE'){
-            RNSettings.openSetting(RNSettings.ACTION_LOCATION_SOURCE_SETTINGS).then(
-                result => {
-                    if (result === RNSettings.ENABLED) {
-
+                        locationUpdate();
                     }
-                },
-            );
-        }
-        })
-    }
-    checkMultiple([PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION, PERMISSIONS.ANDROID.CAMERA]).then((statuses) => {
-        console.log('location', statuses[PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION]);
-        console.log('camera', statuses[PERMISSIONS.ANDROID.CAMERA]);
-        if ('granted' === statuses[PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION, PERMISSIONS.ANDROID.CAMERA]) {
-  
-            locationUpdate();
-        } else {
-          requestMultiple([PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION, PERMISSIONS.ANDROID.CAMERA]).then((statuses) => {
-            if ('granted' === statuses[PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION, PERMISSIONS.ANDROID.CAMERA]) {
-  
-                locationUpdate();
+                });
             }
-          });
+        });
+
+
+
+    }
+
+
+
+
+    const permissionHandler2 = () => {
+        const locationUpdate = () => {
+            GetLocation.getCurrentPosition({
+                enableHighAccuracy: true,
+                timeout: 15000,
+            })
+                .then(location => {
+                   
+                    setlat(location.latitude);
+                    setlon(location.longitude);
+
+                    setscanner(true)
+                })
+                .catch(error => {
+                    const { code, message } = error;
+                    console.warn(code, message);
+                    if (code == 'UNAVAILABLE') {
+                        RNSettings.openSetting(RNSettings.ACTION_LOCATION_SOURCE_SETTINGS).then(
+                            result => {
+                                if (result === RNSettings.ENABLED) {
+
+                                }
+                            },
+                        );
+                    }
+                })
         }
-      });
+        checkMultiple([PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION, PERMISSIONS.ANDROID.CAMERA]).then((statuses) => {
+          
+            if ('granted' === statuses[PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION, PERMISSIONS.ANDROID.CAMERA]) {
+
+                locationUpdate();
+            } else {
+                requestMultiple([PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION, PERMISSIONS.ANDROID.CAMERA]).then((statuses) => {
+                    if ('granted' === statuses[PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION, PERMISSIONS.ANDROID.CAMERA]) {
+
+                        locationUpdate();
+                    }
+                });
+            }
+        });
 
 
 
-}
-
+    }
 
 
     const attendance = async (btn, bussiness_id) => {
@@ -258,8 +328,8 @@ const permissionHandler2=()=>{
             setshift(btn)
             setselectbussiness('')
             permissionHandler()
-            }
-         else {
+        }
+        else {
             setselectbussiness('Plz select bussiness first')
         }
 
@@ -341,76 +411,82 @@ const permissionHandler2=()=>{
     const onRefresh = () => {
         setrefreshing(true);
         setTimeout(() => {
+            dispatch(ConfigInfo())
             dispatch(AttendanceByDay(value));
             setrefreshing(false)
         }, 3000);
+
     };
     const QrScanner = async () => {
         setselectbussiness('')
-       
+
         permissionHandler2()
     }
 
 
     return (
-        <View style={{ flex: 1 }}>
-            <ScrollView nestedScrollEnabled={true} style={HomeStyle.root}
+        <View style={{ flex: 1, backgroundColor: 'white' }}>
+            {/* <TouchableOpacity onPress={()=>AnimatedView()} style={{paddingVertical:30}}>
+                <Text>click me ,,,,,</Text>
+            </TouchableOpacity> */}
+
+            <ScrollView nestedScrollEnabled={true} style={[HomeStyle.root,]}
                 refreshControl={
                     <RefreshControl
                         refreshing={refreshing}
                         onRefresh={onRefresh}
                     />}
             >
-                <StatusBar backgroundColor='#494446' barStyle="light-content" />
-                <View style={HomeStyle.logo_container}>
+                <StatusBar backgroundColor={Colors.Primary} barStyle="light-content" />
+                <View style={[HomeStyle.logo_container, { backgroundColor: Colors.Primary, }]}>
 
-                    
-                             <View style={{flex:1,height:'100%',paddingTop:'5%'}}>
-                             <Image style={HomeStyle.user_pic} source={{
-                                   uri: `${profilepic}`,
-                                 }} />
+
+                    <View style={{ flex: 1, height: '100%', paddingTop: '5%' }}>
+                        <Image style={HomeStyle.user_pic} source={{
+                            uri: `${profilepic}`,
+                        }} />
+                    </View>
+                    <View style={HomeStyle.useinfo_text}>
+                        <Text numberOfLines={1} style={[HomeStyle.user_firstname, { color: Colors.textColor }]}>{user_data.user_first_name}</Text>
+                        <Text style={[HomeStyle.designation_id, { color: Colors.textColor }]}>{user_data.designation}</Text>
+                        <Text style={[HomeStyle.designation_id, { color: Colors.textColor }]}>ID# {user_data.user_id}</Text>
+                    </View>
+                    {/* Eclips button */}
+                    <View style={HomeStyle.eclips}>
+
+                        {sTracking && ShowTracking ?
+                            <TouchableOpacity onPress={() => navigation.navigate('Maps')}><Image style={{ height: 25, width: 25, marginTop: 4, marginRight: 5, tintColor: Colors.textColor }} source={require('../../assets/location.png')} /></TouchableOpacity>
+                            :
+                            null
+                        }
+                        <TouchableOpacity onPress={() => QrScanner()}><MaterialCommunityIcons style={{ marginTop: 5 }} name='qrcode-scan' size={22} color={Colors.textColor} /></TouchableOpacity>
+                        <View >
+                            <Menu opened={isopen}
+                                onBackdropPress={() => onBackdropPress()}
+                                onSelect={value => onOptionSelect(value)}>
+
+                                <MenuTrigger
+                                    onPress={() => onTriggerPress()}
+                                    customStyles={triggerStyles}
+                                >
+                                    <Ionicons
+                                        name="ellipsis-vertical"
+                                        color={Colors.textColor}
+                                        size={25} />
+                                </MenuTrigger>
+                                <MenuOptions customStyles={optionsStyles}>
+                                    <MenuOption value={1} onSelect={updateProfile} text='Update Profile' >
+                                    </MenuOption>
+                                    <MenuOption value={2} onSelect={logout} >
+                                        <Text style={{ color: 'black' }}>Logout</Text>
+                                    </MenuOption>
+
+                                </MenuOptions>
+
+                            </Menu>
                         </View>
-                        <View style={HomeStyle.useinfo_text}>
-                            <Text numberOfLines={1} style={HomeStyle.user_firstname}>{user_data.user_first_name}</Text>
-                            <Text style={HomeStyle.designation_id}>{user_data.designation}</Text>
-                            <Text style={HomeStyle.designation_id}>ID# {user_data.user_id}</Text>
-                        </View>
-                        {/* Eclips button */}
-                        <View style={HomeStyle.eclips}>
-                            
-                            {sTracking && ShowTracking ?
-                                <TouchableOpacity onPress={() => navigation.navigate('Maps')}><Image style={{ height: 25, width: 25, marginTop: 4,marginRight:5, tintColor: 'white' }} source={require('../../assets/location.png')} /></TouchableOpacity>
-                                :
-                                null
-                            }
-                           <TouchableOpacity onPress={() => QrScanner()}><MaterialCommunityIcons style={{ marginTop: 5 }} name='qrcode-scan' size={22} color='white' /></TouchableOpacity>
-                            <View >
-                                <Menu opened={isopen}
-                                    onBackdropPress={() => onBackdropPress()}
-                                    onSelect={value => onOptionSelect(value)}>
+                    </View>
 
-                                    <MenuTrigger
-                                        onPress={() => onTriggerPress()}
-                                        customStyles={triggerStyles}
-                                    >
-                                        <Ionicons
-                                            name="ellipsis-vertical"
-                                            color="white"
-                                            size={25} />
-                                    </MenuTrigger>
-                                    <MenuOptions customStyles={optionsStyles}>
-                                        <MenuOption value={1} onSelect={updateProfile} text='Update Profile' >
-                                        </MenuOption>
-                                        <MenuOption value={2} onSelect={logout} >
-                                            <Text style={{ color: 'black' }}>Logout</Text>
-                                        </MenuOption>
-
-                                    </MenuOptions>
-
-                                </Menu>
-                            </View>
-                        </View>
-                 
 
 
 
@@ -418,27 +494,16 @@ const permissionHandler2=()=>{
 
 
                 {/* DropDownPicker */}
+                <Animated.View style={[ScrollAnimated, Animatedopacity,]}>
                 <View style={HomeStyle.dropdown}>
-
-                    <DropDownPicker
-                        placeholder="Select Business"
-                        open={open}
-                        listMode="SCROLLVIEW"
-                        value={value}
-                        items={items}
-                        setOpen={setOpen}
-                        setValue={setValue}
-                        setItems={setItems}
-                        zIndex={1000}
-                    />
+                    <DropDown selected={setValue} value={value} />
 
                     <Text style={{ color: '#ff2600' }}>{selectbussiness}</Text>
                 </View>
                 {/* button container */}
-                <ScrollView showsVerticalScrollIndicator={false}
-                    showsHorizontalScrollIndicator={false}>
+                
 
-                    <View style={HomeStyle.checkin_container}>
+                    <View style={ HomeStyle.checkin_container}>
                         <TouchableOpacity style={HomeStyle.check_btn} onPress={() => attendance('Start_shift', value)} >
                             <Feather
                                 style={{ marginBottom: 5 }}
@@ -480,7 +545,7 @@ const permissionHandler2=()=>{
                     </View>
 
                     <Modal
-                        style={HomeStyle.modalstyle}
+                        style={[HomeStyle.modalstyle, { backgroundColor: Colors.Primary }]}
 
                         transparent={true}
                         visible={scanner}
@@ -491,41 +556,41 @@ const permissionHandler2=()=>{
                     >
                         <View style={{ flex: 1, backgroundColor: 'black' }}>
                             {showCamera ?
-                        <QRCodeScanner
-                        fadeIn={false}
-                        cameraStyle={{ height: Dimensions.get('window').height, }}
-                        permissionDialogMessage='Need Camera Permission '
-                        showMarker={true}
-                        onRead={onSuccess}
-                        customMarker={
-                            <View style={HomeStyle.rectangleContainer}>
-                                <View style={HomeStyle.topOverlay}/>
-                                    
-
-                                
-
-                                <View style={{ flexDirection: "row" }}>
-                                    <View style={HomeStyle.leftAndRightOverlay} />
-
-                                    <View style={HomeStyle.rectangle} />
+                                <QRCodeScanner
+                                    fadeIn={false}
+                                    cameraStyle={{ height: Dimensions.get('window').height, }}
+                                    permissionDialogMessage='Need Camera Permission '
+                                    showMarker={true}
+                                    onRead={onSuccess}
+                                    customMarker={
+                                        <View style={HomeStyle.rectangleContainer}>
+                                            <View style={HomeStyle.topOverlay} />
 
 
 
-                                    <View style={HomeStyle.leftAndRightOverlay} />
-                                </View>
 
-                                <View style={HomeStyle.bottomOverlay} />
-                            </View>
+                                            <View style={{ flexDirection: "row" }}>
+                                                <View style={HomeStyle.leftAndRightOverlay} />
 
-                        }
-                        flashMode={RNCamera.Constants.FlashMode.auto}
+                                                <View style={HomeStyle.rectangle} />
 
-                    />
-                    :
-                    null    
-                        
-                        }
-                            
+
+
+                                                <View style={HomeStyle.leftAndRightOverlay} />
+                                            </View>
+
+                                            <View style={HomeStyle.bottomOverlay} />
+                                        </View>
+
+                                    }
+                                    flashMode={RNCamera.Constants.FlashMode.auto}
+
+                                />
+                                :
+                                null
+
+                            }
+
                             <View
                                 style={{
                                     position: 'absolute',
@@ -537,19 +602,10 @@ const permissionHandler2=()=>{
                                     onPress={() => setscanner(false)}
                                 ><FontAwesome name='close' size={30} color='white' /></TouchableOpacity>
                             </View>
-                            <View style={{position:'absolute',top:100,width:'85%',marginHorizontal:'7%'}}>
 
-                                <DropDownPicker
-                                    placeholder="Select Business"
-                                    open={open}
-                                    listMode="SCROLLVIEW"
-                                    value={value}
-                                    items={items}
-                                    setOpen={setOpen}
-                                    setValue={setValue}
-                                    setItems={setItems}
-                                    zIndex={1000}
-                                />
+                            <View style={{ position: 'absolute', top: 100, width: '85%', marginHorizontal: '7%' }}>
+
+                                <DropDown selected={setValue} value={value} />
 
                                 <Text style={{ color: 'white' }}>{selectbussiness}</Text>
                             </View>
@@ -591,7 +647,7 @@ const permissionHandler2=()=>{
 
 
                     <Modal
-                        style={HomeStyle.modalstyle}
+                        style={[HomeStyle.modalstyle, { backgroundColor: Colors.Primary }]}
 
                         transparent={true}
                         visible={scanner2}
@@ -681,7 +737,7 @@ const permissionHandler2=()=>{
                     {AttendanceByoneDay.map((item, index) => {
                         return (
 
-                            <View style={HomeStyle.cardshadow_container} key={index} >
+                            <View style={ HomeStyle.cardshadow_container} key={index} >
                                 <View style={HomeStyle.card_container}>
                                     <View style={HomeStyle.card_date}>
                                         <Text style={HomeStyle.today_text} >Today Attendance</Text>
@@ -730,6 +786,7 @@ const permissionHandler2=()=>{
                             </View>
                         )
                     })}
+
                     <View style={{
                         height: 200,
                         marginLeft: '6%',
@@ -774,10 +831,10 @@ const permissionHandler2=()=>{
 
                                 try {
                                     const myJSON = JSON.stringify(getdeviceinfo);
-                                    console.log(myJSON)
+                               
                                     let user_id = await AsyncStorage.getItem('user')
                                     let res = await axios.get(`https://www.attendezz.com/dashboard/api/index.php?action=visitor_history&emp_id=${user_id}&user_device=${myJSON}&banner_link=${imagesurls[index]}`)
-                                    //    console.log(res)
+                                 
                                 } catch (error) {
 
                                 }
@@ -823,20 +880,31 @@ const permissionHandler2=()=>{
 
 
                     </View>
-                </ScrollView>
+                    </Animated.View>
+               
             </ScrollView>
 
-            <TouchableOpacity onPress={() => navigation.navigate('Feedback')} style={{ height: 50, width: 50, elevation: 3, borderRadius: 50 / 2, position: 'absolute', bottom: 8, right: 10, backgroundColor: 'white', alignItems: 'center', justifyContent: 'center' }}>
-                <Image style={{ height: 40, width: 40 }} source={require('../../assets/feedback.jpg')} />
+            <Animated.View style={[animatedStyle, { backgroundColor: Colors.Primary, height: 50, width: 50, elevation: 3, borderRadius: 50 / 2, position: 'absolute', bottom: 8, right: 10, }]} />
+            <TouchableOpacity onPress={() => navigation.navigate('Feedback')} style={[{ height: 50, width: 50, elevation: 3, borderRadius: 50 / 2, position: 'absolute', bottom: 8, right: 10, backgroundColor: Colors.Primary, alignItems: 'center', justifyContent: 'center' }]}>
+
+                <Image style={{ height: 40, width: 40, tintColor: 'white', resizeMode: 'contain' }} source={require('../../assets/feedback.jpg')} />
+
             </TouchableOpacity>
+            {/* {nfcSupport ?
+                <TouchableOpacity onPress={() => navigation.navigate('NFC')} style={[{ height: 50, width: 50, elevation: 3, borderRadius: 50 / 2, position: 'absolute', bottom: 8, left: 10, backgroundColor: Colors.Primary, alignItems: 'center', justifyContent: 'center' }]}>
+
+                    <Image style={{ height: 25, width: 25, tintColor: Colors.textColor, resizeMode: 'contain' }} source={require('../../assets/nfcLogo.png')} />
+
+                </TouchableOpacity>
+                : null} */}
             {loggingout ?
-            <View style={{height:height,width:width,position:'absolute',justifyContent:'center',alignItems:'center',backgroundColor:'#494446'}}>
-            <Text style={{marginBottom:10,color:'white'}}>Logging out ...</Text>
-            <ActivityIndicator size='small' color='white' />
-        </View>
-         :
-        null }
-                  
+                <View style={{ height: height, width: width, position: 'absolute', justifyContent: 'center', alignItems: 'center', backgroundColor: 'white' }}>
+                    <Text style={{ marginBottom: 10, color: 'black' }}>Logging out ...</Text>
+                    <ActivityIndicator size='small' color='black' />
+                </View>
+                :
+                null}
+
         </View>
     )
 }

@@ -6,12 +6,12 @@ import DeviceInfo from 'react-native-device-info';
 import { Alert } from "react-native";
 import messaging from '@react-native-firebase/messaging';
 import moment from 'moment'
-import {reminder,RemoveReminder} from '../../componenets/Notification'
+import {reminder,RemoveReminder,Breakreminder} from '../../componenets/Notification'
 import {onStart ,onStop} from '../../componenets/BackgroundService'
+import PushNotification, {Importance} from "react-native-push-notification"
 
 
-
-export const doLogin = (setloading, email, password) => async (dispatch) => {
+ export const doLogin = (setloading, email, password) => async (dispatch) => {
   setloading(true);
   try {
     
@@ -32,12 +32,12 @@ export const doLogin = (setloading, email, password) => async (dispatch) => {
 
     if (res.data.sts == 'success') {
 
-      if ((res.data.user_created_business).length !== 0) {
-        // console.log('have data', res.data.user_created_business)
+      if ((res.data?.user_created_business).length !== 0) {
+       
         user_login_data.Showtracking=true
-        user_login_data.CreatedBussiness=res.data.user_created_business
+        user_login_data.CreatedBussiness=res.data?.user_created_business
         messaging().getToken().then(Dtoken => {
-          // console.log(Dtoken)
+         
           
           const savetoken = async () => {
             await AsyncStorage.setItem('devicetoken', Dtoken);
@@ -48,8 +48,7 @@ export const doLogin = (setloading, email, password) => async (dispatch) => {
           const id = res.data.user_data.user_id
           arr.map(async (item, index) => {
             const registertoken = await axios.get(`https://www.attendezz.com/dashboard/api/index.php?action=push_token&token_id=${Dtoken}&business_id=${item.business_id}&user_id=${id}`)
-            // console.log(registertoken.data.sts,'register token')
-            console.log(item.business_id, item.is_tracking ,'save items')
+
            
               
             await AsyncStorage.setItem(item.business_id, `${item.is_tracking}`);
@@ -57,7 +56,7 @@ export const doLogin = (setloading, email, password) => async (dispatch) => {
         })
       }
       if (res.data.user_data.is_multiple == "yes") {
-        // console.log("multiple true")
+      
         let token = res.data.user_data.user_id
         await AsyncStorage.setItem('user', token);
         user_login_data.usertoken = token;
@@ -66,11 +65,11 @@ export const doLogin = (setloading, email, password) => async (dispatch) => {
         user_login_data.profile_pic = res.data.user_data.profile_img_path;
       } else {
         if (res.data.user_data.device_id == null) {
-          // console.log('did not get any device id')
+     
           let uniqueId = DeviceInfo.getUniqueId();
-          console.log(uniqueId)
+      
           const res2 = await axios.get(`https://www.attendezz.com/dashboard/api/index.php?action=update_device_code&emp_id=${res.data.user_data.user_id}&device_id=${uniqueId}`)
-          console.log(res2)
+  
           if (res2.data.sts == "success") {
             let token = res.data.user_data.user_id
             await AsyncStorage.setItem('user', token);
@@ -81,8 +80,8 @@ export const doLogin = (setloading, email, password) => async (dispatch) => {
           }
         } else {
           let uniqueId = DeviceInfo.getUniqueId();
-          // console.log(uniqueId)
-          console.log("checking device id is equal to registered id")
+        
+  
           if (uniqueId == res.data.user_data.device_id) {
             let token = res.data.user_data.user_id
             await AsyncStorage.setItem('user', token);
@@ -124,14 +123,14 @@ export const doLogin = (setloading, email, password) => async (dispatch) => {
       'make sure your have a good internet connection',
       ToastAndroid.SHORT
     )
-    console.log(error);
+
     setloading(false)
   }
 };
 
 export const getattendance = (setModalActive, setalert_color, lat, lon, setalert_message, setshowAlert, getbussiness_id, shift) => async (dispatch) => {
   setModalActive(true)
-  console.log(lat, lon, shift, getbussiness_id)
+
   
   if (getbussiness_id !== "" && shift !== "" && lat !== '' && lon !== '') {
 
@@ -140,7 +139,7 @@ export const getattendance = (setModalActive, setalert_color, lat, lon, setalert
       const res = await axios.get(`https://attendezz.com/dashboard/api/index.php?action=mark_attendance_geolocation&emp_id=${userid}&business_id=${getbussiness_id}&lat=${lat}&lon=${lon}&shift=${shift}`)
 
 
-         console.log(res.data)
+
       if (res.data.sts == 'success') {
        
         let todayAttendance = []
@@ -153,7 +152,7 @@ export const getattendance = (setModalActive, setalert_color, lat, lon, setalert
         const date = moment().format("DD")
         const month = moment().format("MM")
         const year = moment().format("YYYY")
-        console.log(date, month, year);
+  
         const res2 = await axios.get(`https://www.attendezz.com/dashboard/api/index.php?action=view_attendance&emp_id=${userid}&dated=${year}-${month}-${date}&business=${getbussiness_id}&filter=byday`)
   
         todayAttendance = res2.data.data.details
@@ -168,42 +167,48 @@ export const getattendance = (setModalActive, setalert_color, lat, lon, setalert
           await AsyncStorage.setItem('UserFName', notification.data.data.employee.user_first_name);
           await AsyncStorage.setItem('UserLName', notification.data.data.employee.user_last_name);
           await AsyncStorage.setItem('UserPic', notification.data.data.profile_img_path);
-          onStart()
+          // onStart()
           }
         }
 
-        console.log(notification.data,)
-        console.log(notification.data.data.user_extra.end_time, "time")
-        if((notification.data.data.notification_token.token_id) !== null ){
-        await fetch('https://attendezz.herokuapp.com/notification', {
-          method: 'post',
-          headers: {
-            'Content-Type': 'application/json'
 
-          },
-          body: JSON.stringify({
-            username: `${(notification.data.data.employee.user_first_name).toUpperCase()} ${(notification.data.data.employee.user_last_name).toUpperCase()}`,
-            userclick: `${notification.data.data.attendance.description}`,
-            image: `${notification.data.data.profile_img_path}`,
-            token: `${notification.data.data.notification_token.token_id}`
-          })
-        }).then(res => { console.log("success") })
-      }
+       
        
          if (shift == 'Start_shift') {
-         reminder(notification.data.data.user_extra.end_time,notification.data.data.employee.user_first_name,notification.data.data.profile_img_path)
+          reminder(notification.data.data.user_extra.end_time,notification.data.data.employee.user_first_name,notification.data.data.profile_img_path)
+
               
         } else {
           if(shift == "End_shift"){
             RemoveReminder()
-            onStop()
+            // onStop()
           }else{
             if(shift == "Start_break"){
-              onStop()
+              
+              Breakreminder(notification.data.data.employee.user_first_name)
+              // onStop()
+            }else{
+              if(shift == "'End_break'"){
+                PushNotification.cancelLocalNotification('3');
+              }
             }
           }
         }
-
+        if((notification.data.data.notification_token.token_id) !== null || (notification.data.data.notification_token.token_id) !== '' ){
+          await fetch('https://attendezz.herokuapp.com/notification', {
+            method: 'post',
+            headers: {
+              'Content-Type': 'application/json'
+  
+            },
+            body: JSON.stringify({
+              username: `${(notification.data.data.employee.user_first_name).toUpperCase()} ${(notification.data.data.employee.user_last_name).toUpperCase()}`,
+              userclick: `${notification.data.data.attendance.description}`,
+              image: `${notification.data.data.profile_img_path}`,
+              token: `${notification.data.data.notification_token.token_id}`
+            })
+          }).then(res => { console.log("success") })
+        }
     
         
       
@@ -248,10 +253,10 @@ export const doLogout = (setloggingout) => async (dispatch) => {
     await AsyncStorage.removeItem('user');
     
     const DeviceToken = await AsyncStorage.getItem('devicetoken')
-    console.log(DeviceToken)
+  
     if (DeviceToken !== null) {
       let res =await axios.get(`https://www.attendezz.com/dashboard/api/index.php?action=deactive_token&token_id=${DeviceToken}`)
-   console.log(res.data)
+
     }
     await AsyncStorage.clear()
     setloggingout(false)
@@ -262,7 +267,7 @@ export const doLogout = (setloggingout) => async (dispatch) => {
 
     })
   } catch (error) {
-    console.log(error);
+  
   }
 
 };
@@ -276,7 +281,7 @@ export const forgetpassword = (setloading, useremail) => async (dispatch) => {
   try {
     let source = axios.CancelToken.source();
     const forget = await axios.get(`https://www.attendezz.com/dashboard/api/index.php?action=forgot_password_module&user_email=${useremail}`, { cancelToken: source.token })
-    console.log(forget)
+ 
     if (forget.data.sts == 'success') {
       ToastAndroid.show(
         forget.data.msg,
@@ -285,7 +290,7 @@ export const forgetpassword = (setloading, useremail) => async (dispatch) => {
     } else {
       if (forget.data.sts == 'danger') {
         var emailerror = forget.data.msg
-        console.log(emailerror)
+      
       }
 
     }
@@ -296,7 +301,7 @@ export const forgetpassword = (setloading, useremail) => async (dispatch) => {
     })
 
   } catch (error) {
-    console.log(error);
+    
   } finally {
     setloading(false);
   }
@@ -316,11 +321,11 @@ export const UpdateuserPassword = (setshowAlert, setAlertMessage, setloading, ol
       new_confiem_pass_not_matched: null
     }
     const res = await axios.get(`https://www.attendezz.com/dashboard/api/index.php?action=update_password&user_id=${userid}&old_password=${oldpassword}&new_password=${newpassword}&confirm_password=${confirmpassword}`)
-    console.log(res)
+
     if (res.data.sts == 'success') {
       setshowAlert(true);
       setAlertMessage(res.data.msg)
-      // console.log(res.data.msg)
+ 
 
     } else {
       if (res.data.sts == 'warning') {
@@ -362,16 +367,17 @@ export const getuserfromstorage = () => async (dispatch) => {
     CreatedBussiness:[]
   }
   
-  console.log('useeffect call')
+
   try {
     if (userid !== null) {
 
       getusertoken.usertoken = userid;
+     
       let res = await axios.get(`https://www.attendezz.com/dashboard/api/index.php?action=getuser&user_id=${userid}`)
-       console.log(res.data)
+   
       if (res.data.sts == 'success') {
         if ((res.data.user_created_business).length !== 0) {
-          console.log('have data', res.data.user_created_business)
+       
           getusertoken.Showtracking=true
           getusertoken.CreatedBussiness=res.data.user_created_business
           const arr= res.data.user_created_business
@@ -403,9 +409,9 @@ export const getuserfromstorage = () => async (dispatch) => {
       ToastAndroid.SHORT
     );
     setTimeout(() => {
-      console.log('eroor')
+    
       getusertoken.offline=true
-      console.log(error);
+ 
   
       dispatch({
         type: RETRIEVEDUSER,
@@ -433,16 +439,16 @@ export const offfline=(setloading)=>async(dispatch)=>{
     CreatedBussiness:[],
   }
   
-  console.log('useeffect call')
+  
   try {
     if (userid !== null) {
 
       getusertoken.usertoken = userid;
       let res = await axios.get(`https://www.attendezz.com/dashboard/api/index.php?action=getuser&user_id=${userid}`)
-      //  console.log(res)
+  
       if (res.data.sts == 'success') {
         if ((res.data.user_created_business).length !== 0) {
-          console.log('have data', res.data.user_created_business)
+    
           getusertoken.Showtracking=true
           getusertoken.CreatedBussiness=res.data.user_created_business
         }
@@ -467,9 +473,9 @@ export const offfline=(setloading)=>async(dispatch)=>{
       ToastAndroid.SHORT
     );
     setTimeout(() => {
-      console.log('eroor')
+    
       getusertoken.offline=true
-      console.log(error);
+    
   
       dispatch({
         type: RETRIEVEDUSER,
@@ -500,7 +506,7 @@ export const updateuser = (setUpdtaeMessage, setshowAlert, setloading, firstname
       setshowAlert(true);
       setUpdtaeMessage(res.data.msg);
 
-      // console.log('updated message', res.data.msg)
+  
       const res2 = await axios.get(`https://www.attendezz.com/dashboard/api/index.php?action=getuser&user_id=${userid}`);
 
       if (res2.data.sts == 'success') {
@@ -518,7 +524,7 @@ export const updateuser = (setUpdtaeMessage, setshowAlert, setloading, firstname
       "Make sure you have a good Internet connection",
       ToastAndroid.SHORT
     );
-    console.log(error);
+
   }
   finally {
     setloading(false);
@@ -537,10 +543,10 @@ export const Filteritem = (setshowfilter, setloading, business_id, date, mathod)
       // let source = axios.CancelToken.source();
       // , { cancelToken: source.token }
       const res = await axios.get(`https://www.attendezz.com/dashboard/api/index.php?action=view_attendance&emp_id=${userid}&dated=${date}&business=${business_id}&filter=by${mathod}`)
-      //  console.log(res)
+ 
       if (res.data.sts == "success") {
         getfilter_item = res.data.data.details
-        //  console.log( getfilter_item)
+   
         setshowfilter(true)
       }
     } else {
@@ -556,7 +562,7 @@ export const Filteritem = (setshowfilter, setloading, business_id, date, mathod)
       payload: getfilter_item
     })
   } catch (error) {
-    console.log(error)
+
   } finally {
     setloading(false)
   }
@@ -568,7 +574,7 @@ export const bussiness_rules = (business_id) => async (dispatch) => {
     if (business_id !== "") {
       //  let source = axios.CancelToken.source();
       const res = await axios.get(`https://www.attendezz.com/dashboard/api/index.php?action=view_business_rules&business_id=${business_id}`)
-      console.log(res)
+  
       if (res.data.sts == 'success') {
         Rules = res.data.business_rules
       } else {
@@ -576,7 +582,7 @@ export const bussiness_rules = (business_id) => async (dispatch) => {
           Rules = [res.data.business_rules]
         }
       }
-      console.log(Rules)
+ 
       dispatch({
         type: BUSINESSRULE,
         payload: Rules,
@@ -584,7 +590,7 @@ export const bussiness_rules = (business_id) => async (dispatch) => {
     }
 
   } catch (error) {
-    console.log(error)
+
   }
 }
 
@@ -597,11 +603,10 @@ export const AttendanceByDay = (b_id) => async (dispatch) => {
     const date = d.getDate();
     const month = d.getMonth() + 1;
     const year = d.getFullYear();
-    // console.log(date, month, year);
-    // let source = axios.CancelToken.source();
+
 
     const res = await axios.get(`https://www.attendezz.com/dashboard/api/index.php?action=view_attendance&emp_id=${userid}&dated=${year}-${month}-${date}&business=${b_id}&filter=byday`)
-    // console.log(res.data.data.details)
+ 
     todayAttendance = res.data.data.details
 
     dispatch({
@@ -609,7 +614,6 @@ export const AttendanceByDay = (b_id) => async (dispatch) => {
       payload: todayAttendance
     })
   } catch (error) {
-    console.log(error)
 
   }
 }
@@ -622,7 +626,7 @@ export const uploadImage = (base64) => async (dispatch) => {
   const userid = await AsyncStorage.getItem('user');
   try {
     const res = await axios.post(`https://www.attendezz.com/dashboard/api/index.php?action=update_profile_pic&user_id=${userid}`, imagedata)
-    console.log(res)
+    
     if (res.data.sts == 'success') {
       profile_pic = res.data.img_path
 
@@ -633,7 +637,7 @@ export const uploadImage = (base64) => async (dispatch) => {
     })
 
   } catch (error) {
-    console.log(error)
+
   }
 
 }
@@ -648,7 +652,7 @@ export const doRequestLeave = (setUpdtaeMessage, setshowAlert, setloading, bs_id
 
 
     const res = await axios.get(`https://attendezz.com/dashboard/api/index.php?action=request_leave&business_id=${bs_id}&description=${des}&user_id=${userid}&from=${from}&to=${to}`)
-    console.log(res)
+  
     if (res.data.sts == "success") {
       setshowAlert(true)
       setUpdtaeMessage(res.data.msg)
@@ -665,7 +669,7 @@ export const doRequestLeave = (setUpdtaeMessage, setshowAlert, setloading, bs_id
       payload: leaveData
     })
   } catch (error) {
-    console.log(error)
+
   } finally {
     setloading(false)
   }
@@ -684,7 +688,7 @@ export const viewLeave = (setrefresh, bs_id) => async (dispatch) => {
       if (array !== null) {
         leaveData = array.reverse()
       }
-      // console.log(res.data.data)
+    
 
     }
     dispatch({
@@ -693,7 +697,7 @@ export const viewLeave = (setrefresh, bs_id) => async (dispatch) => {
     })
 
   } catch (error) {
-    console.log(error)
+  
   } finally {
     setrefresh(false)
   }
@@ -709,7 +713,7 @@ export const feedback = (setloading, setsubmitted, setshowAlert, feedtext) => as
     }
 
   } catch (error) {
-    console.log(error)
+
   } finally {
     setloading(false)
   }

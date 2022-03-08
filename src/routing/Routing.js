@@ -9,6 +9,7 @@ import { View } from 'react-native'
 import { MenuProvider } from 'react-native-popup-menu';
 import StackScreen from './stackScreens';
 import NoInternet from '../modules/no internet/NoInternet';
+import {ConfigInfo} from '../store/actions/Appconfig'
 
 export function Routing() {
   const dispatch = useDispatch()
@@ -24,12 +25,14 @@ export function Routing() {
 
 
   useEffect(() => {
-
+    dispatch(ConfigInfo())
     const getdata = async () => {
         dispatch(getuserfromstorage())
     }
     getdata();
   }, [])
+
+
 
 
   if (loading1) {

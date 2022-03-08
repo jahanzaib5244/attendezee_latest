@@ -1,9 +1,11 @@
 import { StyleSheet } from "react-native";
+import {Colors} from '../../config/AppConfig'
+
+
 
 export const ForgetpasswordStyle = StyleSheet.create({
     root: {
         flex: 1,
-        backgroundColor: "#494446"
     },
     logo_container: {
         height:180,

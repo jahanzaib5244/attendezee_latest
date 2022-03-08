@@ -7,13 +7,14 @@ import { getuserfromstorage, updateuser, uploadImage } from '../../store/actions
 import ImagePicker from 'react-native-image-crop-picker';
 import AwesomeAlert from 'react-native-awesome-alerts';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-
+import AppConfigColors from '../../config/AppConfig'
 
 export default function UpdateProfile() {
+     const [Colors]= AppConfigColors()
      const user_info = useSelector(state => state.AuthReducer.data)
      const profilepic = useSelector(state => state.AuthReducer.profileimage)
      // const message = useSelector(state => state.AuthReducer.UPmessage)
-     // console.log(message)
+   
      const [firstname, setfirstname] = useState(user_info.user_first_name)
      const [lastname, setlastname] = useState(user_info.user_last_name)
      const [phone, setphone] = useState(user_info.user_phone)
@@ -39,8 +40,8 @@ export default function UpdateProfile() {
                includeBase64: true,
                cropping: true
           }).then(image => {
-               // console.log(image);
-               console.log(image.size)
+             
+           
                if (image.size <= 200000) {
                     if (image.mime == 'image/jpeg' || image.mime == 'image/jpg' || image.mime == 'image/png' || image.mime == 'image/gif') {
                          setimage(image.path);
@@ -72,7 +73,7 @@ export default function UpdateProfile() {
      const Confirm = (date) => {
 
           const dateString = JSON.stringify(date)
-          console.log(dateString)
+    
           setdob((dateString.slice(1, 11)));
           setshowdate(false)
      }
@@ -84,7 +85,7 @@ export default function UpdateProfile() {
 
           <ScrollView style={UpdateProfileStyle.root}>
 
-               <View style={UpdateProfileStyle.user_pic_container}>
+               <View style={[UpdateProfileStyle.user_pic_container,{backgroundColor:Colors.Primary,}]}>
                     <TouchableOpacity onPress={selectimage}>
                          <Image style={UpdateProfileStyle.userpic} source={{
                               uri: `${image}`,
@@ -158,9 +159,10 @@ export default function UpdateProfile() {
                     </View>
                     {/* <Text style={{ color: '#4FD369' }}>{message}</Text> */}
                     {loading ?
-                         <View><ActivityIndicator style={UpdateProfileStyle.btn} size="small" color="white" /></View>
+        
+                         <View><ActivityIndicator style={[UpdateProfileStyle.btn,{backgroundColor:Colors.Primary,}]} size="small" color="white" /></View>
                          :
-                         <TouchableOpacity onPress={updateuserdata} style={UpdateProfileStyle.btn}><Text style={{ color: 'white', fontSize: 16 }}>Update Profile</Text></TouchableOpacity>
+                         <TouchableOpacity onPress={updateuserdata} style={[UpdateProfileStyle.btn,{backgroundColor:Colors.Primary,}]}><Text style={{ color: 'white', fontSize: 16 }}>Update Profile</Text></TouchableOpacity>
                     }
                     <AwesomeAlert
                          show={showAlert}

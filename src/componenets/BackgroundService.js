@@ -21,7 +21,7 @@ export const onStart = () => {
           detail: 'fine' // or 'fine'
         }
       }).then((granted) => {
-        console.log(granted, "check permission first")
+      
         if (granted) {
           RNLocation.configure({
             distanceFilter: 0, // Meters
@@ -46,7 +46,7 @@ export const onStart = () => {
             .then(latestLocation => {
               if (latestLocation !== null) {
                 try {
-                  console.log(latestLocation, "first")
+               
                   const getitems = async () => {
                     try {
                       const UserID = await AsyncStorage.getItem('userID')                    
@@ -54,11 +54,11 @@ export const onStart = () => {
                        const UserFname = await AsyncStorage.getItem('UserFName');
                       const UserLname = await AsyncStorage.getItem('UserLName')
                       const UserPic = await AsyncStorage.getItem('UserPic')                   
-                      console.log(UserID, BusinessID, UserFname, UserLname, UserPic, "getitems")
+                    
                       const date=moment().format("DD-MM-YYYY")
                       const newReference = database().ref(`/${BusinessID}/locationHistory/${UserID}/${date}`).push();
 
-                      console.log('Auto generated key: ', newReference.key);
+                     
 
                       newReference
                         .set({
@@ -112,7 +112,7 @@ export const onStart = () => {
               detail: 'fine',
             },
           }).then((granted) => {
-            console.log(granted, "check permission")
+          
             if (granted) {
               RNLocation.configure({
                 distanceFilter: 0, // Meters
@@ -136,7 +136,7 @@ export const onStart = () => {
               RNLocation.getLatestLocation({ timeout: 60000 })
                 .then(latestLocation => {
                   if (latestLocation !== null) {
-                    console.log(latestLocation)
+                   
                   }
 
                 })

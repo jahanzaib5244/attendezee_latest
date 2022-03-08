@@ -5,9 +5,11 @@ import { feedback } from '../../store/actions/AuthAction'
 import { FeedbackStyle } from './FeedbackStyle'
 import AwesomeAlert from 'react-native-awesome-alerts';
 import Textarea from 'react-native-textarea';
+import AppConfigColors from '../../config/AppConfig'
 
 
 export default function Feedback() {
+    const [Colors]= AppConfigColors()
     const [feedtext, setfeedtext] = useState('')
     const [isempty, setisempty] = useState('')
     const [showAlert, setshowAlert] = useState(false)
@@ -25,7 +27,7 @@ export default function Feedback() {
        
     }
     return (
-        <View style={FeedbackStyle.root}>
+        <View style={[FeedbackStyle.root,{backgroundColor:Colors.primary}]}>
             <View style={FeedbackStyle.input_container}>
                 <Text style={FeedbackStyle.input_label}>Suggestion / Problem </Text>
                 <Textarea
@@ -52,7 +54,7 @@ export default function Feedback() {
                <ActivityIndicator size="small" color="white"/>
            </View>
             : 
-                <TouchableOpacity onPress={submitfeedback} style={FeedbackStyle.submit_btn}>
+                <TouchableOpacity onPress={submitfeedback} style={[FeedbackStyle.submit_btn,{backgroundColor:Colors.Primary,}]}>
                 <Text style={FeedbackStyle.submit_text}>Submit</Text>
             </TouchableOpacity>
                }

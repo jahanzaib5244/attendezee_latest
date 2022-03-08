@@ -7,11 +7,11 @@ import { useDispatch } from 'react-redux';
 import { UpdateuserPassword } from '../../store/actions/AuthAction';
 import { useSelector } from 'react-redux';
 import AwesomeAlert from 'react-native-awesome-alerts';
-
+import AppConfigColors from '../../config/AppConfig'
 
 
 export default function UpdatePassword() {
-
+    const [Colors]= AppConfigColors()
 
     const oldpasswordincorrect = useSelector(state => state.AuthReducer.old_password_incorrect)
     const new_old_not_same = useSelector(state => state.AuthReducer.new_old_pass_wrong)
@@ -183,7 +183,7 @@ export default function UpdatePassword() {
                     <View
 
                         style={[UpdatepasswordStyle.signIn, {
-                            backgroundColor: '#494446',
+                            backgroundColor: Colors.Primary,
                             marginTop: "15%",
                             marginBottom: 60,
                         }]}
@@ -198,7 +198,7 @@ export default function UpdatePassword() {
                         onPress={onupdatepassword}
                         style={[UpdatepasswordStyle.signIn, {
 
-                            backgroundColor: '#494446',
+                            backgroundColor:Colors.Primary,
                             marginTop: "15%",
                             marginBottom: 60,
                         }]}

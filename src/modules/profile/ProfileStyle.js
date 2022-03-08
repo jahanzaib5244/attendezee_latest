@@ -1,27 +1,22 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet ,Dimensions} from "react-native";
 
+
+const {width}=Dimensions.get('window')
 
 export const ProfileStyle = StyleSheet.create({
     root: {
         flex: 1,
-        backgroundColor: 'white',
        
     },
 
     userinfo: {
-        height: 220,
-        width: "100%",
-        backgroundColor: '#494446',
-       
-        position: 'relative',
+        height: 180,
+        width: width,
         alignItems: 'center',
-        justifyContent: 'flex-start',
-        // flexDirection: 'row',
-        overflow:'hidden'
+      justifyContent:'center'
 
     },
     userinfo_container: {
-        flex: 2,
         backgroundColor: 'white',
         marginLeft: '5%',
         marginRight: '5%',
@@ -89,10 +84,10 @@ export const ProfileStyle = StyleSheet.create({
       
     },
     user_pic: {
-        width: 150,
-        height: 150,
-        borderRadius: 150 / 2,
-        position:'absolute',
+        width: 120,
+        height: 120,
+        borderRadius: 120 / 2,
+      
     },
     user_info_text: {
         paddingTop: 10

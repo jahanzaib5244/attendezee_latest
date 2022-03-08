@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-
+import { Colors } from "../../config/AppConfig";
 
 export const UpdateProfileStyle = StyleSheet.create({
     root:{
@@ -9,7 +9,7 @@ export const UpdateProfileStyle = StyleSheet.create({
     user_pic_container:{
         height:200,
         width:'100%',
-        backgroundColor:'#494446',
+        
         alignItems:'center',
         justifyContent:'center',
 
@@ -49,7 +49,6 @@ export const UpdateProfileStyle = StyleSheet.create({
         marginBottom:70,
         alignItems:'center',
         justifyContent:'center' ,
-        backgroundColor:'#494446',
         padding:10,
         borderRadius:15
     },
