@@ -1,15 +1,16 @@
 {
   "project_info": {
     "project_number": "59522788395",
+    "firebase_url": "https://attendezz-default-rtdb.firebaseio.com",
     "project_id": "attendezz",
     "storage_bucket": "attendezz.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:59522788395:android:bdc1f8040ac145b3708e6e",
+        "mobilesdk_app_id": "1:59522788395:android:e9428b4766899a0c708e6e",
         "android_client_info": {
-          "package_name": "com.attendace"
+          "package_name": "com.cgit.attendezz"
         }
       },
       "oauth_client": [
@@ -29,6 +30,13 @@
             {
               "client_id": "59522788395-9u36j0rt51mdc2s20nkt0g1mau636lfh.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "59522788395-5jii3t1r3repvobfja1d4avrmaktm7en.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.reactjs.native.example.Attendezz"
+              }
             }
           ]
         }
