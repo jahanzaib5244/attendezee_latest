@@ -3,7 +3,7 @@ require_relative '../node_modules/@react-native-community/cli-platform-ios/nativ
 
 platform :ios, '11.0'
 
-target 'Attendace' do
+target 'Attendezz' do
   config = use_native_modules!
 
   use_react_native!(
@@ -32,7 +32,7 @@ target 'Attendace' do
   pod 'RNFS', :path => '../node_modules/react-native-fs'
 
 
-  target 'AttendaceTests' do
+  target 'AttendezzTests' do
     inherit! :complete
     # Pods for testing
   end
